@@ -378,6 +378,13 @@ export type {
   UseFeeStatsReturn,
 } from "./hooks/useFeeStats";
 
+export { useLedgerInfo } from "./hooks/useLedgerInfo";
+export type {
+  LedgerInfo,
+  UseLedgerInfoOptions,
+  UseLedgerInfoReturn,
+} from "./hooks/useLedgerInfo";
+
 export { useLiquidityPool } from "./hooks/useLiquidityPool";
 export type {
   LiquidityPoolReserve,
