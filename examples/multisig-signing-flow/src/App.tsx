@@ -271,6 +271,13 @@ export default function App() {
           </div>
         )}
 
+        {/* Transaction status announcements (screen readers) */}
+        <div aria-live="polite" aria-atomic="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+          {isError && error?.message && `Error: ${error.message}`}
+          {isSuccess && hash && `Transaction submitted successfully! Transaction hash: ${hash}`}
+          {isLoading && "Processing transaction…"}
+        </div>
+
         {isError && (
           <div className="alert alert-error">
             <strong>Error:</strong> {error?.message || "Unknown error"}
@@ -461,6 +468,16 @@ export default function App() {
               className="input"
               placeholder="10"
               disabled={currentStep >= 2}
+              style={{
+                outline: "none",
+                transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
           </div>
 
@@ -473,6 +490,16 @@ export default function App() {
               className="input"
               placeholder="G..."
               disabled={currentStep >= 2}
+              style={{
+                outline: "none",
+                transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
             <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
               Defaults to Signer A address if blank
@@ -488,6 +515,16 @@ export default function App() {
               className="input"
               placeholder="Optional memo"
               disabled={currentStep >= 2}
+              style={{
+                outline: "none",
+                transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
           </div>
         </div>
@@ -510,6 +547,41 @@ export default function App() {
               }}
               className={walletStatus.className}
               disabled={!walletInstalled}
+              style={{
+                padding: "0.75rem 1.5rem",
+                borderRadius: 6,
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "1rem",
+                outline: "none",
+                transition: "box-shadow 0.15s ease, transform 0.1s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!walletInstalled) return;
+                if (walletConnected) {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(239, 68, 68, 0.3)";
+                } else {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.3)";
+                }
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+              onFocus={(e) => {
+                if (!walletInstalled) return;
+                if (walletConnected) {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(239, 68, 68, 0.5)";
+                } else {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.5)";
+                }
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
             >
               {walletStatus.label}
             </button>
@@ -531,12 +603,73 @@ export default function App() {
               onClick={handleBuildTransaction}
               disabled={!walletConnected || !walletPublicKey || isLoading || currentStep >= 2}
               className="btn btn-primary"
-              style={{ marginRight: "12px" }}
+              style={{
+                marginRight: "12px",
+                padding: "0.75rem 1.5rem",
+                borderRadius: 6,
+                border: "none",
+                background: !walletConnected || !walletPublicKey || isLoading || currentStep >= 2 ? "#9ca3af" : "#6366f1",
+                color: !walletConnected || !walletPublicKey || isLoading || currentStep >= 2 ? "#6b7280" : "#fff",
+                fontWeight: 600,
+                fontSize: "1rem",
+                cursor: !walletConnected || !walletPublicKey || isLoading || currentStep >= 2 ? "not-allowed" : "pointer",
+                outline: "none",
+                transition: "box-shadow 0.15s ease, transform 0.1s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!(!walletConnected || !walletPublicKey || isLoading || currentStep >= 2)) {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.3)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+              onFocus={(e) => {
+                if (!(!walletConnected || !walletPublicKey || isLoading || currentStep >= 2)) {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.5)";
+                }
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
             >
               {currentStep >= 2 ? "✓ Transaction Built" : "🔨 Build Transaction"}
             </button>
             {unsignedXdr && (
-              <button onClick={handleReset} className="btn btn-secondary">
+              <button
+                onClick={handleReset}
+                className="btn btn-secondary"
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: 6,
+                  border: "1px solid #d1d5db",
+                  background: "#f9fafb",
+                  color: "#374151",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  cursor: "pointer",
+                  outline: "none",
+                  transition: "box-shadow 0.15s ease, transform 0.1s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.5)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
                 Reset
               </button>
             )}
@@ -549,7 +682,38 @@ export default function App() {
                 onClick={handleSignTransaction}
                 disabled={!walletConnected || isLoading}
                 className="btn btn-outline"
-                style={{ marginRight: "12px" }}
+                style={{
+                  marginRight: "12px",
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: 6,
+                  border: !walletConnected || isLoading ? "1px solid #d1d5db" : "2px solid #8b5cf6",
+                  background: !walletConnected || isLoading ? "#f9fafb" : "transparent",
+                  color: !walletConnected || isLoading ? "#6b7280" : "#8b5cf6",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  cursor: !walletConnected || isLoading ? "not-allowed" : "pointer",
+                  outline: "none",
+                  transition: "box-shadow 0.15s ease, transform 0.1s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!(!walletConnected || isLoading)) {
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.3)";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+                onFocus={(e) => {
+                  if (!(!walletConnected || isLoading)) {
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.5)";
+                  }
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
               >
                 {signedBy.includes(walletPublicKey || "") ? (
                   "✓ Already Signed"
@@ -567,6 +731,37 @@ export default function App() {
                 onClick={handleSubmitTransaction}
                 disabled={isLoading || status === "success"}
                 className="btn btn-success"
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: 6,
+                  border: "none",
+                  background: isLoading || status === "success" ? "#9ca3af" : "#059669",
+                  color: isLoading || status === "success" ? "#6b7280" : "#fff",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  cursor: isLoading || status === "success" ? "not-allowed" : "pointer",
+                  outline: "none",
+                  transition: "box-shadow 0.15s ease, transform 0.1s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!(isLoading || status === "success")) {
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.3)";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+                onFocus={(e) => {
+                  if (!(isLoading || status === "success")) {
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.5)";
+                  }
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
               >
                 {isLoading ? "Submitting..." : "🚀 Submit Transaction"}
               </button>

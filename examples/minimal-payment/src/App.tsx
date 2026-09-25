@@ -36,11 +36,30 @@ function PaymentDemo() {
         <div className="card">
           <h2>Freighter Not Detected</h2>
           <p>Please install the Freighter wallet extension to use this demo.</p>
-          <a
+          <          <a
             href="https://freighter.app"
             target="_blank"
             rel="noopener noreferrer"
             className="button"
+            style={{
+              outline: "none",
+              transition: "box-shadow 0.15s ease, transform 0.1s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(102, 126, 234, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(102, 126, 234, 0.4)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
           >
             Install Freighter
           </a>
@@ -55,7 +74,29 @@ function PaymentDemo() {
         <div className="card">
           <h2>Connect Your Wallet</h2>
           <p>Connect your Freighter wallet to send payments on Stellar testnet.</p>
-          <button onClick={connect} className="button">
+          <button
+            onClick={connect}
+            className="button"
+            style={{
+              outline: "none",
+              transition: "box-shadow 0.15s ease, transform 0.1s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(102, 126, 234, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(102, 126, 234, 0.4)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
             Connect Freighter
           </button>
         </div>
@@ -68,7 +109,29 @@ function PaymentDemo() {
       <div className="card">
         <div className="header">
           <h2>Send XLM Payment</h2>
-          <button onClick={disconnect} className="button secondary">
+          <button
+            onClick={disconnect}
+            className="button secondary"
+            style={{
+              outline: "none",
+              transition: "box-shadow 0.15s ease, transform 0.1s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(156, 163, 175, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(156, 163, 175, 0.4)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
             Disconnect
           </button>
         </div>
@@ -107,9 +170,24 @@ function PaymentDemo() {
             onClick={handleSend}
             disabled={payment.isLoading || !destination || !amount}
             className="button primary"
+            aria-live="polite"
+            aria-atomic="true"
           >
-            {payment.isLoading ? "Sending..." : "Send Payment"}
+            {payment.isLoading ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <div className="skeleton skeleton-text" style={{ width: "80px" }} />
+              </div>
+            ) : (
+              "Send Payment"
+            )}
           </button>
+
+          {/* Transaction status announcements (screen readers) */}
+          <div aria-live="polite" aria-atomic="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+            {payment.isLoading && "Sending payment…"}
+            {payment.isSuccess && payment.hash && `Payment successful. Transaction hash: ${payment.hash}`}
+            {payment.isError && payment.error?.message && `Payment failed. ${payment.error.message}`}
+          </div>
 
           {payment.isSuccess && (
             <div className="success">
