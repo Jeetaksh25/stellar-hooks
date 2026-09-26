@@ -9,6 +9,8 @@
 export { StellarProvider, StellarHooksProvider, useStellarContext } from "./context";
 export { HookActivityOverlay } from "./devtools/HookActivityOverlay";
 export type { HookActivityOverlayProps } from "./devtools/HookActivityOverlay";
+export { DevToolsPanel } from "./devtools/DevToolsPanel";
+export type { DevToolsPanelProps } from "./devtools/DevToolsPanel";
 
 // Hooks
 export { useNetwork } from "./hooks/useNetwork";
@@ -53,6 +55,7 @@ export type {
   UseStellarAccountsReturn,
 } from "./hooks/useStellarAccounts";
 export { useStellarBalance } from "./hooks/useStellarBalance";
+export type { UseStellarBalanceReturn } from "./hooks/useStellarBalance";
 export { useSorobanContract } from "./hooks/useSorobanContract";
 export { useSorobanRead } from "./hooks/useSorobanRead";
 export type {
@@ -227,7 +230,7 @@ export { useAssets } from "./hooks/useAssets";
 export type { UseAssetsOptions, UseAssetsReturn } from "./hooks/useAssets";
 
 export { useAssetBalance } from "./hooks/useAssetBalance";
-export type { AssetDescriptor, UseAssetBalanceReturn } from "./hooks/useAssetBalance";
+export type { AssetDescriptor, UseAssetBalanceOptions, UseAssetBalanceReturn } from "./hooks/useAssetBalance";
 
 export { useTrustlines } from "./hooks/useTrustlines";
 export type { TrustlineAsset, UseTrustlinesReturn } from "./hooks/useTrustlines";
@@ -319,17 +322,57 @@ export {
 } from "./wallets";
 
 // Utilities
-export { parseAccountResponse, getCache, setCache, clearCache, getSandboxUrls, HOOK_SANDBOXES } from "./utils";
-export type { HookSandboxInfo } from "./utils";
-
-// Typed error classes
 export {
+  parseAccountResponse,
+  getCache,
+  setCache,
+  clearCache,
+  getSandboxUrls,
+  HOOK_SANDBOXES,
+  createMemoryCacheAdapter,
+  defaultCacheAdapter,
+  formatAssetAmount,
+  useFormatAmount,
+} from "./utils";
+export type { HookSandboxInfo, CacheAdapter, FormatAssetAmountOptions } from "./utils";
+
+// Debug logger
+export {
+  DEBUG_STORAGE_KEY,
+  isDebugLoggingEnabled,
+  setDebugLogging,
+  enableDebugLogging,
+  disableDebugLogging,
+  logger,
+  debugLogger,
+} from "./utils/logger";
+
+// Typed error classes and error code enum
+export {
+  ErrorCode,
   StellarHookError,
   UserRejectedError,
   FreighterNotInstalledError,
+  WalletNotConnectedError,
+  WalletNotInstalledError,
+  TransactionFailedError,
+  TransactionTimeoutError,
+  NetworkError,
   SimulationError,
   isUserRejectionMessage,
 } from "./utils/errors";
+export type { ErrorCodeType } from "./utils/errors";
+
+// Internationalized (i18n) error strings
+export {
+  DEFAULT_ERROR_STRINGS,
+  getErrorString,
+  setErrorStrings,
+  getErrorStrings,
+  resetErrorStrings,
+  formatErrorTemplate,
+} from "./utils/errorStrings";
+export type { ErrorStrings, ErrorStringKey } from "./utils/errorStrings";
 
 export { decodeXdr, formatXdrResult, detectXdrType } from "./utils/xdr";
 export type { XdrDecodeResult } from "./utils/xdr";
@@ -350,6 +393,13 @@ export type {
   UseFeeStatsOptions,
   UseFeeStatsReturn,
 } from "./hooks/useFeeStats";
+
+export { useLedgerInfo } from "./hooks/useLedgerInfo";
+export type {
+  LedgerInfo,
+  UseLedgerInfoOptions,
+  UseLedgerInfoReturn,
+} from "./hooks/useLedgerInfo";
 
 export { useLiquidityPool } from "./hooks/useLiquidityPool";
 export type {

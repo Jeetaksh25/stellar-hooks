@@ -231,6 +231,46 @@ export function useSorobanContract<TResult = unknown>(
     error: state.error,
   });
 
+  // Dev-mode-only warning (issue #779): flag contract IDs with no
+  // deployed WASM the RPC endpoint can see. This can't attest to the
+  // *source* being published/verifiable (there's no on-chain source
+  // registry to check against), but catching a contract ID that doesn't
+  // resolve to any deployed code at all — a typo, wrong network, or an
+  // address that was never actually deployed to — is the checkable subset
+  // of that risk, and the most common way this bites someone in practice.
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" || !contractId) {
+      return;
+    }
+
+    let cancelled = false;
+    const server = sorobanRpcServer ?? new rpc.Server(config.sorobanRpcUrl);
+
+    server
+      .getContractWasmByContractId(contractId)
+      .then((wasm) => {
+        if (!cancelled && !wasm) {
+          console.warn(
+            `[useSorobanContract] No deployed WASM found for contract ID "${contractId}" ` +
+              `on ${config.sorobanRpcUrl}. Double-check the contract ID and network before signing.`
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          console.warn(
+            `[useSorobanContract] Could not verify contract ID "${contractId}" against ` +
+              `${config.sorobanRpcUrl} — it may not be deployed on this network. ` +
+              `Double-check the contract ID and network before signing.`
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [contractId, sorobanRpcServer, config.sorobanRpcUrl]);
+
   const estimateFromSimulation = useCallback(
     (
       simulation: rpc.Api.SimulateTransactionResponse,

@@ -16,6 +16,7 @@ import type {
   NetworkConfig,
 } from "./types";
 import { NETWORK_CONFIGS } from "./types";
+import { emitDevToolsActivity } from "./devtools/devtoolsBridge";
 
 const NETWORK_STORAGE_KEY = "stellar-hooks:network";
 const CUSTOM_CONFIG_STORAGE_KEY = "stellar-hooks:custom-config";
@@ -55,6 +56,7 @@ export function StellarHooksProvider({
   sorobanRpcUrl: initialSorobanRpcUrl,
   networkPassphrase: initialNetworkPassphrase,
   customConfig: initialCustomConfig,
+  cacheAdapter,
   children,
 }: StellarHooksProviderProps) {
   const defaultNetwork = initialNetwork || 
@@ -132,8 +134,8 @@ export function StellarHooksProvider({
   }, [network, customHorizonUrl, customSorobanRpcUrl, customPassphrase]);
 
   const value = useMemo<StellarContextInternalValue>(
-    () => ({ config, network, switchNetwork, networkVersion, networkEpoch, requestCache }),
-    [config, network, switchNetwork, networkVersion, networkEpoch, requestCache]
+    () => ({ config, network, switchNetwork, networkVersion, networkEpoch, requestCache, cacheAdapter }),
+    [config, network, switchNetwork, networkVersion, networkEpoch, requestCache, cacheAdapter]
   );
 
   const registerHookActivity = useCallback(
@@ -183,6 +185,10 @@ export function StellarHooksProvider({
     setHookEntries((previous) => previous.filter((entry) => entry.id !== id));
   }, []);
 
+  useEffect(() => {
+    emitDevToolsActivity(hookEntries);
+  }, [hookEntries]);
+
   const debugValue = useMemo<StellarHookDebugContextValue>(
     () => ({
       entries: hookEntries,
@@ -205,12 +211,14 @@ export function StellarHooksProvider({
 export function StellarProvider({
   network = "testnet",
   customConfig,
+  cacheAdapter,
   children,
 }: StellarProviderProps) {
   return (
     <StellarHooksProvider
       network={network}
       customConfig={customConfig}
+      cacheAdapter={cacheAdapter}
     >
       {children}
     </StellarHooksProvider>
