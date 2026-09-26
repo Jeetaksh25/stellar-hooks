@@ -310,7 +310,7 @@ export function useWallet(options?: UseWalletOptions): UseWalletReturn {
   // Auto-connect: restore the last-used wallet ID from localStorage on mount.
   // Only the wallet type (e.g. "freighter") is stored — never keys or secrets.
   useEffect(() => {
-    if (!options?.autoConnect || state.availableWallets.length === 0) return;
+    if (!options?.autoConnect || state.availableWallets.length === 0 || typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem(WALLET_PERSIST_KEY) as WalletId | null;
       if (saved && state.availableWallets.includes(saved)) {
@@ -324,6 +324,7 @@ export function useWallet(options?: UseWalletOptions): UseWalletReturn {
 
   // Persist wallet type on connect; clear on disconnect.
   useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
       if (state.activeWallet) {
         localStorage.setItem(WALLET_PERSIST_KEY, state.activeWallet);
