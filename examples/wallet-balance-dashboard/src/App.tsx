@@ -99,10 +99,9 @@ function WalletSection() {
             disabled={freighterLoading || !isInstalled}
           >
             {freighterLoading ? (
-              <>
-                <span className="spinner" aria-hidden="true" />
-                Connecting...
-              </>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <div className="skeleton skeleton-text" style={{ width: "100px" }} />
+              </div>
             ) : !isInstalled ? (
               "Freighter Not Detected"
             ) : (
@@ -125,10 +124,7 @@ function BalanceSection({ publicKey }: { publicKey: string }) {
         <div className="balance-card">
           <h3>Available</h3>
           {balanceLoading ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span className="spinner" aria-hidden="true" />
-              <span>Loading...</span>
-            </div>
+            <div className="skeleton skeleton-text large" style={{ width: "50%" }} />
           ) : xlmBalance ? (
             <div className="balance-value">
               {xlmBalance.balance}
@@ -161,8 +157,7 @@ function AccountDetailsSection({ publicKey }: { publicKey: string }) {
       <div className="card">
         <h2>Account Details</h2>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "1rem" }}>
-          <span className="spinner" aria-hidden="true" />
-          <span>Loading account data...</span>
+          <div className="skeleton skeleton-text" style={{ width: "180px" }} />
         </div>
       </div>
     );

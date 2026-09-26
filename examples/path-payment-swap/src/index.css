@@ -72,16 +72,33 @@ header p {
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s;
+  transition: box-shadow 0.15s ease, transform 0.1s ease, background 0.2s;
+  outline: none;
 }
 
 .button:hover {
   background: #5568d3;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
 }
 
 .button:disabled {
   background: #ccc;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.button:focus {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+}
+
+.button:focus:not(:disabled):hover {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4), 0 0 0 5px rgba(102, 126, 234, 0.2);
+}
+
+.button:focus:active {
+  transform: translateY(0);
 }
 
 .button.secondary {
@@ -91,6 +108,23 @@ header p {
 
 .button.secondary:hover {
   background: #e0e0e0;
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.3);
+  transform: translateY(-1px);
+}
+
+.button.secondary:focus {
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.4);
+}
+
+.button.secondary:focus:not(:disabled):hover {
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.4), 0 0 0 5px rgba(156, 163, 175, 0.2);
+}
+
+.button.secondary:disabled {
+  background: #f8f9fa;
+  color: #888;
+  box-shadow: none;
+  transform: none;
 }
 
 .button.primary {
@@ -100,6 +134,22 @@ header p {
 
 .button.primary:hover:not(:disabled) {
   background: #5568d3;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+}
+
+.button.primary:focus:not(:disabled) {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+}
+
+.button.primary:focus:not(:disabled):hover {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4), 0 0 0 5px rgba(102, 126, 234, 0.2);
+}
+
+.button.primary:disabled {
+  background: #ccc;
+  box-shadow: none;
+  transform: none;
 }
 
 /* ── Header row ── */
@@ -173,14 +223,15 @@ header p {
   border: 2px solid #e0e0e0;
   border-radius: 6px;
   font-size: 16px;
-  transition: border-color 0.2s;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
   background: white;
+  outline: none;
 }
 
 .field input:focus,
 .select:focus {
-  outline: none;
   border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 
 .select:disabled {
@@ -247,18 +298,39 @@ header p {
   font-weight: 600;
   color: #555;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: box-shadow 0.15s ease, transform 0.1s ease, border-color 0.15s, background 0.15s, color 0.15s;
+  outline: none;
 }
 
 .slippage-btn:hover {
   border-color: #667eea;
   color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+}
+
+.slippage-btn:focus {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+}
+
+.slippage-btn:focus:hover {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4), 0 0 0 5px rgba(102, 126, 234, 0.2);
 }
 
 .slippage-btn.active {
   border-color: #667eea;
   background: #667eea;
   color: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+}
+
+.slippage-btn:disabled {
+  background: #f8f9fa;
+  color: #888;
+  border-color: #e0e0e0;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
 }
 
 /* ── Minimum received row ── */

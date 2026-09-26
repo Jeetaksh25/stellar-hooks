@@ -72,18 +72,26 @@ function TokenBalanceRow({
   return (
     <tr className={isLoading ? "loading" : error ? "error" : ""}>
       <td className="token-symbol">
-        <span className="token-icon">{token.symbol.charAt(0)}</span>
+        {isLoading ? (
+          <div className="skeleton skeleton-icon" aria-label="Loading token" />
+        ) : (
+          <span className="token-icon">{token.symbol.charAt(0)}</span>
+        )}
         <div>
           <strong>{token.symbol}</strong>
           <small>{token.name}</small>
         </div>
       </td>
       <td className="token-id">
-        <code>{token.id.slice(0, 12)}…</code>
+        {isLoading ? (
+          <div className="skeleton skeleton-text small" style={{ width: "40%" }} />
+        ) : (
+          <code>{token.id.slice(0, 12)}…</code>
+        )}
       </td>
       <td className="token-balance">
         {isLoading ? (
-          <span className="loading-spinner" aria-label="Loading">⟳</span>
+          <div className="skeleton skeleton-text" style={{ width: "50%" }} />
         ) : error ? (
           <span className="error-text" title={error.message}>—</span>
         ) : (
@@ -216,7 +224,11 @@ function BalanceViewer() {
         <h2>Wallet</h2>
         {!isConnected ? (
           <button className="connect-btn" onClick={connect} disabled={freighterLoading}>
-            {freighterLoading ? "Connecting…" : "Connect Freighter"}
+            {freighterLoading ? (
+              <div className="skeleton skeleton-text" style={{ width: "150px" }} />
+            ) : (
+              "Connect Freighter"
+            )}
           </button>
         ) : (
           <div className="wallet-info">
@@ -239,7 +251,7 @@ function BalanceViewer() {
         <section className="card">
           <h2>Native Balance</h2>
           {balanceLoading ? (
-            <p className="loading-text">Loading XLM balance…</p>
+            <div className="skeleton skeleton-text large" style={{ width: "30%" }} />
           ) : (
             <p className="xlm-balance">
               <span className="token-icon">X</span>
@@ -266,9 +278,9 @@ function BalanceViewer() {
             <table className="token-table">
               <thead>
                 <tr>
-                  <th>Token</th>
-                  <th>Contract ID</th>
-                  <th>Balance</th>
+                  <th><div className="skeleton skeleton-text small" style={{ width: "60%" }} /></th>
+                  <th><div className="skeleton skeleton-text small" style={{ width: "40%" }} /></th>
+                  <th><div className="skeleton skeleton-text small" style={{ width: "30%" }} /></th>
                   <th></th>
                 </tr>
               </thead>
