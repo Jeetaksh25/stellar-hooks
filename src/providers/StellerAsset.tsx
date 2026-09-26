@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useOptionalStellarHookDebugContext } from "../context";
 
-export interface HookActivityOverlayProps {
+export interface AssetsHooks {
   /** Set to false to hide the overlay even in development. */
   enabled?: boolean;
   /** Render the overlay in production too. Defaults to false. */
