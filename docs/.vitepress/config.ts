@@ -65,6 +65,8 @@ export default defineConfig({
             { text: 'Migration Guide', link: '/guide/migration' },
             { text: 'Troubleshooting', link: '/guide/troubleshooting' },
             { text: 'Changelog', link: '/guide/changelog' },
+            { text: 'Changelog Format Guide', link: '/guides/changelog-format-guide' },
+            { text: 'Roadmap', link: '/guide/roadmap' },
           ]
         }
       ],
