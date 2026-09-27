@@ -359,6 +359,23 @@ function SendPaymentForm({
                   cursor: "pointer",
                   fontSize: "0.85rem",
                   fontWeight: 600,
+                  outline: "none",
+                  transition: "box-shadow 0.15s ease, transform 0.1s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(202, 138, 4, 0.3)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(202, 138, 4, 0.3)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
                 {walletLoading ? "Connecting…" : "Connect Freighter"}
@@ -419,6 +436,16 @@ function SendPaymentForm({
               fontSize: "0.88rem",
               boxSizing: "border-box",
               fontFamily: "monospace",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.borderColor = "#2563eb";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = showError("destination") ? "#f87171" : "#d1d5db";
             }}
           />
           {showError("destination") && <FieldError message={errors.destination} />}
@@ -476,6 +503,16 @@ function SendPaymentForm({
                       border: `1px solid ${showError("code") ? "#f87171" : "#d1d5db"}`,
                       fontSize: "0.85rem",
                       boxSizing: "border-box",
+                      outline: "none",
+                      transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+                      e.currentTarget.style.borderColor = "#2563eb";
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.boxShadow = "none";
+                      e.currentTarget.style.borderColor = showError("code") ? "#f87171" : "#d1d5db";
                     }}
                   />
                   {showError("code") && <FieldError message={errors.code} />}
@@ -501,6 +538,16 @@ function SendPaymentForm({
                       fontSize: "0.85rem",
                       fontFamily: "monospace",
                       boxSizing: "border-box",
+                      outline: "none",
+                      transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+                      e.currentTarget.style.borderColor = "#2563eb";
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.boxShadow = "none";
+                      e.currentTarget.style.borderColor = showError("issuer") ? "#f87171" : "#d1d5db";
                     }}
                   />
                   {showError("issuer") && <FieldError message={errors.issuer} />}
@@ -539,6 +586,16 @@ function SendPaymentForm({
               border: `1px solid ${showError("amount") ? "#f87171" : "#d1d5db"}`,
               fontSize: "0.88rem",
               boxSizing: "border-box",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.borderColor = "#2563eb";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = showError("amount") ? "#f87171" : "#d1d5db";
             }}
           />
           {showError("amount") && <FieldError message={errors.amount} />}
@@ -568,6 +625,16 @@ function SendPaymentForm({
               border: `1px solid ${showError("memo") ? "#f87171" : "#d1d5db"}`,
               fontSize: "0.88rem",
               boxSizing: "border-box",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.borderColor = "#2563eb";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = showError("memo") ? "#f87171" : "#d1d5db";
             }}
           />
           {showError("memo") && <FieldError message={errors.memo} />}
@@ -595,7 +662,27 @@ function SendPaymentForm({
                 fontWeight: 600,
                 fontSize: "0.9rem",
                 cursor: isLoading || !isConnected ? "not-allowed" : "pointer",
-                transition: "background 0.15s",
+                transition: "box-shadow 0.15s ease, transform 0.1s ease",
+                outline: "none",
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading && isConnected) {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+              onFocus={(e) => {
+                if (!isLoading && isConnected) {
+                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+                }
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
               }}
             >
               {isLoading ? "Sending…" : "Send Payment"}
@@ -614,6 +701,23 @@ function SendPaymentForm({
                 fontWeight: 600,
                 fontSize: "0.9rem",
                 cursor: "pointer",
+                outline: "none",
+                transition: "box-shadow 0.15s ease, transform 0.1s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
               }}
             >
               Send Another
@@ -621,6 +725,16 @@ function SendPaymentForm({
           )}
         </div>
       </form>
+
+      {/* ── Transaction status announcements (screen readers) ─────────────────── */}
+      <div aria-live="polite" aria-atomic="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+        {status === "building" && "Building transaction…"}
+        {status === "signing" && "Waiting for wallet signature…"}
+        {status === "submitting" && "Submitting to network…"}
+        {status === "polling" && "Waiting for confirmation…"}
+        {isSuccess && hash && `Payment confirmed. Transaction hash: ${hash}`}
+        {isError && error && `Payment failed. ${error.message}`}
+      </div>
 
       {/* ── Status feedback ──────────────────────────────────────────────────── */}
       <PendingOverlay status={status} />

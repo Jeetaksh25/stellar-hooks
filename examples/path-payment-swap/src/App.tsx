@@ -257,11 +257,19 @@ function SwapForm({ publicKey, disconnect }: { publicKey: string; disconnect: ()
             </div>
           )}
 
+          {/* Transaction status announcements (screen readers) */}
+          <div aria-live="polite" aria-atomic="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+            {isLoading && "Processing swap…"}
+            {isSuccess && hash && `Swap successful. Transaction hash: ${hash.slice(0, 10)}…${hash.slice(-8)}`}
+            {isError && error && `Swap failed. ${error.message}`}
+          </div>
+
           {/* Swap button */}
           <button
             onClick={handleSwap}
             disabled={isLoading || !isFormValid}
             className="button primary swap-btn"
+            aria-live="polite"
           >
             {isLoading ? "Swapping…" : `Swap ${sendAssetKey} → ${receiveAssetKey}`}
           </button>
