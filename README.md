@@ -837,6 +837,8 @@ See [docs/guides/migration-guide.md](docs/guides/migration-guide.md) for a compr
 
 Please review our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) for more details before opening a pull request.
 
+See also: [Contributors](CONTRIBUTORS.md) · [Bounty Program](BOUNTIES.md) · [Community Updates](COMMUNITY.md)
+
 ## Documentation
 
 Full documentation with live examples is available at **[https://spiffamani.github.io/stellar-hooks/](https://spiffamani.github.io/stellar-hooks/)**
