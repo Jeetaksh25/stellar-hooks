@@ -9,6 +9,7 @@ import { useMemo, useCallback } from "react";
 import { useStellarAccount, type UseStellarAccountOptions } from "./useStellarAccount";
 import type { StellarBalance, StellarAccountData, StellarPublicKey } from "../types";
 import { formatAssetAmount, type FormatAssetAmountOptions } from "../utils/formatAmount";
+import { warnDeprecated } from "../utils/deprecation";
 
 export interface UseStellarBalanceReturn {
   balances: StellarBalance[];
@@ -85,6 +86,14 @@ export function useStellarBalance(
     typeof assetOrOptions === "object" &&
     "code" in assetOrOptions &&
     "issuer" in assetOrOptions;
+
+  if (isAsset) {
+    warnDeprecated(
+      "useStellarBalance(publicKey, { code, issuer })",
+      "Passing an asset filter to useStellarBalance is deprecated and will be removed in v1.0.0. Use useAssetBalance(publicKey, asset, options) instead. See MIGRATION.md.",
+      { version: "1.0.0" }
+    );
+  }
 
   const asset = isAsset ? (assetOrOptions as { code: string; issuer: string }) : null;
   const accountOptions = isAsset ? options : (assetOrOptions as UseStellarAccountOptions);
