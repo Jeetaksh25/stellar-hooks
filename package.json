@@ -790,6 +790,17 @@
         "default": "./dist/hooks/useTrustline.js"
       }
     },
+    "./useBatchTrustline": {
+      "types": "./dist/hooks/useBatchTrustline.d.ts",
+      "import": {
+        "types": "./dist/hooks/useBatchTrustline.d.mts",
+        "default": "./dist/hooks/useBatchTrustline.mjs"
+      },
+      "require": {
+        "types": "./dist/hooks/useBatchTrustline.d.ts",
+        "default": "./dist/hooks/useBatchTrustline.js"
+      }
+    },
     "./useTrustlines": {
       "types": "./dist/hooks/useTrustlines.d.ts",
       "import": {

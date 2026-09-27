@@ -50,6 +50,12 @@ export interface UseMultiOperationTransactionOptions {
   };
   /** Build and polling timeout in seconds. Default: 60 */
   timeoutSeconds?: number;
+  /** Additional transaction middleware to execute for this hook instance */
+  middleware?: import("../middleware").TransactionMiddleware[];
+  /** Callback fired before transaction submission. Return false to abort submission. */
+  onBeforeSubmit?: import("../types").OnBeforeSubmitCallback;
+  /** Callback fired after transaction submission finishes or fails. */
+  onAfterSubmit?: import("../types").OnAfterSubmitCallback;
   /** Callback fired when the transaction is successfully confirmed on-chain. */
   onSuccess?: (hash: string) => void;
   /** Callback fired when an error occurs at any stage. */
@@ -157,6 +163,9 @@ export function useMultiOperationTransaction(
     memo,
     feeBump,
     timeoutSeconds = 60,
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     onSuccess,
     onError,
   } = options;
@@ -177,6 +186,9 @@ export function useMultiOperationTransaction(
     mode,
     timeoutSeconds,
     debugLabel: "useMultiOperationTransaction",
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     ...(onSuccess && { onSuccess }),
     ...(onError && { onError }),
   });

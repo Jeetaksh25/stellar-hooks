@@ -209,6 +209,12 @@ export type {
   UseTrustlineOptions,
   UseTrustlineReturn,
 } from "./useTrustline";
+export { useBatchTrustline } from "./useBatchTrustline";
+export type {
+  BatchTrustlineAsset,
+  UseBatchTrustlineOptions,
+  UseBatchTrustlineReturn,
+} from "./useBatchTrustline";
 export { useCreateAccount } from "./useCreateAccount";
 export type { UseCreateAccountOptions, UseCreateAccountReturn } from "./useCreateAccount";
 

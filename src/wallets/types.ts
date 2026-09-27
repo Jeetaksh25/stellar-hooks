@@ -1,4 +1,6 @@
-export type WalletId = "freighter" | "lobstr" | "xbull" | "albedo" | "rabet" | "ledger" | "lobstr-wc";
+export type BuiltinWalletId = "freighter" | "lobstr" | "xbull" | "albedo" | "rabet" | "ledger" | "lobstr-wc";
+
+export type WalletId = BuiltinWalletId | (string & {});
 
 /**
  * Display metadata for a wallet — used to render wallet-picker UIs without
@@ -45,6 +47,34 @@ export interface WalletAdapter {
 }
 
 /**
+ * A wallet plugin that can create and configure a custom wallet adapter.
+ */
+export interface WalletAdapterPlugin {
+  /** Unique name or ID of the wallet adapter plugin. */
+  name: string;
+  /** Creates and returns the wallet adapter instance. */
+  createAdapter(): WalletAdapter;
+}
+
+/**
+ * Accepted input type for custom wallet adapters: a ready adapter, a plugin, or a factory function.
+ */
+export type CustomWalletAdapterInput =
+  | WalletAdapter
+  | WalletAdapterPlugin
+  | (() => WalletAdapter);
+
+/** Helper to define and type-check a custom wallet adapter */
+export function defineWalletAdapter(adapter: WalletAdapter): WalletAdapter {
+  return adapter;
+}
+
+/** Helper to define and type-check a wallet adapter plugin */
+export function defineWalletPlugin(plugin: WalletAdapterPlugin): WalletAdapterPlugin {
+  return plugin;
+}
+
+/**
  * A wallet entry enriched with its detected installation status.
  * Used in the `wallets` array returned by `useWallet`.
  */
@@ -58,3 +88,4 @@ export interface WalletInfo {
   /** Whether the wallet extension / app is currently available in this browser. */
   isInstalled: boolean;
 }
+

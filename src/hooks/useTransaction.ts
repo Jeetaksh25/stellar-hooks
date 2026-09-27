@@ -23,6 +23,8 @@ import { validatePublicKey } from "../utils";
 // ─── Options ──────────────────────────────────────────────────────────────────
 
 import type { RetryStrategy } from "./useTransactionCore";
+import type { OnBeforeSubmitCallback, OnAfterSubmitCallback } from "../types";
+import type { TransactionMiddleware } from "../middleware";
 
 export interface UseTransactionOptions {
   /** Configuration for handling network failures during polling */
@@ -47,6 +49,12 @@ export interface UseTransactionOptions {
   };
   /** Build and polling timeout in seconds. Default: 60 */
   timeoutSeconds?: number;
+  /** Additional transaction middleware to execute for this hook instance */
+  middleware?: TransactionMiddleware[];
+  /** Callback fired before transaction submission. Return false to abort submission. */
+  onBeforeSubmit?: OnBeforeSubmitCallback;
+  /** Callback fired after transaction submission finishes or fails. */
+  onAfterSubmit?: OnAfterSubmitCallback;
   /** Callback fired when the transaction is successfully confirmed on-chain. */
   onSuccess?: (hash: string) => void;
   /** Callback fired when an error occurs at any stage. */
@@ -147,6 +155,9 @@ export function useTransaction(
     memo,
     feeBump,
     timeoutSeconds = 60,
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     onSuccess,
     onError,
   } = options;
@@ -166,6 +177,9 @@ export function useTransaction(
     mode,
     timeoutSeconds,
     debugLabel: "useTransaction",
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     ...(onSuccess && { onSuccess }),
     ...(onError && { onError }),
   });
