@@ -22,7 +22,7 @@ Install the library via your preferred package manager:
 ```bash
 npm install stellar-hooks
 ```
-*(Note: `@stellar/stellar-sdk` and `@stellar/freighter-api` are bundled as direct dependencies, so you don't need to install them separately).*
+*(Note: `@stellar/stellar-sdk` and `@stellar/freighter-api` are bundled as direct dependencies, so you don't need to install them separately. See [`COMPATIBILITY.md`](COMPATIBILITY.md) for supported SDK versions and compatibility matrix).*
 
 ### 2. Wrap Your App in `<StellarProvider>`
 

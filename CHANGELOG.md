@@ -9,6 +9,18 @@ For breaking changes and migration steps, see [MIGRATION.md](MIGRATION.md).
 
 ## [Unreleased]
 
+### Added
+- `SEMVER.md` — formal Semantic Versioning policy defining breaking-change criteria across hook signatures, return shapes, default behaviors, and peer dependencies ([#861](https://github.com/dark-princezz/stellar-hooks/issues/861))
+- `COMPATIBILITY.md` — compatibility matrix documenting `@stellar/stellar-sdk` major versions (v10–v13), React versions, and known migration gotchas ([#863](https://github.com/dark-princezz/stellar-hooks/issues/863))
+- `codemods/v0.2.0/use-account-merge.js` — automated `jscodeshift` codemod migrating consumer code from pre-v0.2.0 `useAccountMerge` to the options and `submit()` pattern ([#864](https://github.com/dark-princezz/stellar-hooks/issues/864))
+
+### Deprecated
+- `warnDeprecated` — standardized console deprecation warning system with call-deduplication and migration guidance ([#862](https://github.com/dark-princezz/stellar-hooks/issues/862))
+- `useAccountMerge()` without options / legacy `merge()` function — deprecated ahead of removal in v1.0.0; migrate to `useAccountMerge({ destination })` and `submit()` ([#862](https://github.com/dark-princezz/stellar-hooks/issues/862))
+- `useStellarBalance(publicKey, { code, issuer })` — asset filtering in `useStellarBalance` deprecated ahead of removal in v1.0.0; migrate to `useAssetBalance(publicKey, asset, options)` ([#862](https://github.com/dark-princezz/stellar-hooks/issues/862))
+- `accountToSign` option in `useFreighter` — deprecated in favor of `address` ([#862](https://github.com/dark-princezz/stellar-hooks/issues/862))
+- `sorobanRpcServer` option in `useSorobanContract` — deprecated in favor of `StellarProvider` RPC configuration ([#862](https://github.com/dark-princezz/stellar-hooks/issues/862))
+
 ## 0.2.0 — 2026-07-25
 
 ### Added

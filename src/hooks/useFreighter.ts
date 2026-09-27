@@ -20,6 +20,7 @@ import type {
 } from "../types";
 import { asPublicKey, unsafeAsXdrString, type StellarXdrString } from "../types";
 import { UserRejectedError, isUserRejectionMessage } from "../utils/errors";
+import { warnDeprecated } from "../utils/deprecation";
 
 // ─── Network mismatch helpers ─────────────────────────────────────────────────
 
@@ -116,3 +117,267 @@ function getNetworkPassphraseMismatch(
  * ```
  */
 export function useFreighter(options?: UseFreighterOptions): UseFreighterReturn {
+  const [state, setState] = useState<Omit<FreighterState, "networkPassphraseMismatch" | "networkPassphraseWarning">>({
+    isInstalled: false,
+    isConnected: false,
+    publicKey: null,
+    network: null,
+    networkPassphrase: null,
+    isLoading: true,
+    error: null,
+  });
+  const [isSigningMessage, setIsSigningMessage] = useState(false);
+  const [isAutoConnecting, setIsAutoConnecting] = useState(false);
+  const stellarContext = useOptionalStellarContext();
+  const expectedNetworkPassphrase =
+    options?.expectedNetworkPassphrase ?? stellarContext?.config.networkPassphrase ?? null;
+  const autoConnect = options?.autoConnect ?? false;
+
+  const networkPassphraseMismatch = useMemo(
+    () =>
+      getNetworkPassphraseMismatch(
+        state.isConnected,
+        state.networkPassphrase,
+        expectedNetworkPassphrase,
+      ),
+    [state.isConnected, state.networkPassphrase, expectedNetworkPassphrase],
+  );
+
+  const networkPassphraseWarning = useMemo(() => {
+    if (!networkPassphraseMismatch || !expectedNetworkPassphrase) return null;
+    return buildNetworkPassphraseWarning(state.network, expectedNetworkPassphrase);
+  }, [networkPassphraseMismatch, expectedNetworkPassphrase, state.network]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function probe() {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+      try {
+        const { isConnected: connected, error: connErr } = await normalizeIsConnected();
+        if (cancelled) return;
+
+        if (connErr || !connected) {
+          setState({ isInstalled: false, isConnected: false, publicKey: null, network: null, networkPassphrase: null, isLoading: false, error: null });
+          return;
+        }
+
+        const { address, error: addrErr } = await normalizeGetAddress();
+        if (cancelled) return;
+
+        if (!addrErr && address) {
+          const networkDetails = await normalizeGetNetworkDetails();
+          if (cancelled) return;
+          setState({
+            isInstalled: true,
+            isConnected: true,
+            publicKey: asPublicKey(address),
+            network: networkDetails.network ?? "",
+            networkPassphrase: networkDetails.networkPassphrase ?? "",
+            isLoading: false,
+            error: null,
+          });
+        } else if (autoConnect) {
+          setIsAutoConnecting(true);
+          try {
+            const { isAllowed: allowed } = await isAllowed();
+            if (cancelled) return;
+
+            if (allowed) {
+              const { address: reconAddress, error: reconErr } = await normalizeRequestAccess();
+              if (cancelled) return;
+
+              if (!reconErr && reconAddress) {
+                const networkDetails = await normalizeGetNetworkDetails();
+                if (cancelled) return;
+                setState({
+                  isInstalled: true,
+                  isConnected: true,
+                  publicKey: asPublicKey(reconAddress),
+                  network: networkDetails.network ?? "",
+                  networkPassphrase: networkDetails.networkPassphrase ?? "",
+                  isLoading: false,
+                  error: null,
+                });
+              } else {
+                setState({ isInstalled: true, isConnected: false, publicKey: null, network: null, networkPassphrase: null, isLoading: false, error: null });
+              }
+            } else {
+              setState({ isInstalled: true, isConnected: false, publicKey: null, network: null, networkPassphrase: null, isLoading: false, error: null });
+            }
+          } finally {
+            if (!cancelled) setIsAutoConnecting(false);
+          }
+        } else {
+          setState({ isInstalled: true, isConnected: false, publicKey: null, network: null, networkPassphrase: null, isLoading: false, error: null });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: err instanceof Error ? err : new Error(String(err)),
+          }));
+        }
+      }
+    }
+
+    void probe();
+    return () => { cancelled = true; };
+  }, [autoConnect]);
+
+  const connect = useCallback(async () => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    try {
+      const { address, error } = await normalizeRequestAccess();
+      if (error) {
+        setState((prev) => ({ ...prev, isLoading: false, error }));
+        return;
+      }
+      if (!address) {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: new Error("Failed to get address"),
+        }));
+        return;
+      }
+
+      const networkDetails = await normalizeGetNetworkDetails();
+      setState({
+        isInstalled: true,
+        isConnected: true,
+        publicKey: asPublicKey(address),
+        network: networkDetails.network ?? "",
+        networkPassphrase: networkDetails.networkPassphrase ?? "",
+        isLoading: false,
+        error: null,
+      });
+    } catch (err) {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: err instanceof Error ? err : new Error(String(err)),
+      }));
+    }
+  }, []);
+
+  const disconnect = useCallback(() => {
+    setState({ isInstalled: true, isConnected: false, publicKey: null, network: null, networkPassphrase: null, isLoading: false, error: null });
+  }, []);
+
+  const signTx = useCallback(
+    async (
+      xdr: StellarXdrString,
+      opts?: SignTransactionOptions & { accountToSign?: string }
+    ): Promise<StellarXdrString> => {
+      if (opts && "accountToSign" in opts && opts.accountToSign) {
+        warnDeprecated(
+          "signTransaction({ accountToSign })",
+          "The 'accountToSign' option is deprecated and will be removed in v1.0.0. Use 'address' instead. See docs/freighter-api-migration.md.",
+          { version: "1.0.0" }
+        );
+      }
+
+      const effectiveAddress = opts?.address ?? opts?.accountToSign;
+
+      const { signedTxXdr, error } = await signTransaction(xdr, {
+        ...(opts?.networkPassphrase && { networkPassphrase: opts.networkPassphrase }),
+        ...(effectiveAddress && { address: effectiveAddress }),
+      });
+      if (error) {
+        throw isUserRejectionMessage(error.message)
+          ? new UserRejectedError(error.message, { cause: error, walletId: "freighter", operation: "signTransaction" })
+          : new Error(error.message);
+      }
+      return unsafeAsXdrString(signedTxXdr);
+    },
+    []
+  );
+
+  const signEntry = useCallback(
+    async (entryPreimageXdr: StellarXdrString): Promise<StellarXdrString> => {
+      const publicKey = state.publicKey;
+      if (!publicKey) throw new Error("Wallet not connected");
+      const { signedAuthEntry, error } = await signAuthEntry(entryPreimageXdr, {
+        address: publicKey,
+      });
+      if (error) {
+        throw isUserRejectionMessage(error.message)
+          ? new UserRejectedError(error.message, { cause: error, walletId: "freighter", operation: "signAuthEntry" })
+          : new Error(error.message);
+      }
+      if (!signedAuthEntry) throw new Error("No signed auth entry returned");
+      return unsafeAsXdrString(signedAuthEntry);
+    },
+    [state.publicKey]
+  );
+
+  const signBlob = useCallback(
+    async (blob: string, opts?: { accountToSign?: string; address?: string }): Promise<string> => {
+      if (opts?.accountToSign) {
+        warnDeprecated(
+          "signBlob({ accountToSign })",
+          "The 'accountToSign' option is deprecated and will be removed in v1.0.0. Use 'address' instead.",
+          { version: "1.0.0" }
+        );
+      }
+      const address = opts?.address ?? opts?.accountToSign ?? state.publicKey;
+      if (!address) throw new Error("Wallet not connected");
+      const { signedMessage: signed, error } = await signMessage(blob, { address });
+      if (error) {
+        throw isUserRejectionMessage(error.message)
+          ? new UserRejectedError(error.message, { cause: error, walletId: "freighter", operation: "signBlob" })
+          : new Error(error.message);
+      }
+      if (!signed) throw new Error("No signed message returned");
+      return signed.toString();
+    },
+    [state.publicKey]
+  );
+
+  const signMsg = useCallback(
+    async (message: string, opts?: { accountToSign?: string; address?: string }): Promise<string> => {
+      if (opts?.accountToSign) {
+        warnDeprecated(
+          "signMessage({ accountToSign })",
+          "The 'accountToSign' option is deprecated and will be removed in v1.0.0. Use 'address' instead.",
+          { version: "1.0.0" }
+        );
+      }
+      const address = opts?.address ?? opts?.accountToSign ?? state.publicKey;
+      if (!address) throw new Error("Wallet not connected");
+      setIsSigningMessage(true);
+      try {
+        const { signedMessage: signed, error } = await signMessage(message, { address });
+        if (error) {
+          throw isUserRejectionMessage(error.message)
+            ? new UserRejectedError(error.message, { cause: error, walletId: "freighter", operation: "signMessage" })
+            : new Error(error.message);
+        }
+        if (!signed) throw new Error("No signed message returned");
+        return signed.toString();
+      } finally {
+        setIsSigningMessage(false);
+      }
+    },
+    [state.publicKey]
+  );
+
+  return useMemo(
+    () => ({
+      ...state,
+      networkPassphraseMismatch,
+      networkPassphraseWarning,
+      isSigningMessage,
+      isAutoConnecting,
+      connect,
+      disconnect,
+      signTransaction: signTx,
+      signAuthEntry: signEntry,
+      signBlob,
+      signMessage: signMsg,
+    }),
+    [state, networkPassphraseMismatch, networkPassphraseWarning, isSigningMessage, isAutoConnecting, connect, disconnect, signTx, signEntry, signBlob, signMsg]
+  );
+}

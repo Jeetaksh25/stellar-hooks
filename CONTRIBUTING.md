@@ -257,6 +257,10 @@ Keep the description under 70 characters. Reference the issue in the PR body, no
 4. Run `npm run build` — ensure the project builds
 5. Run `npm run changeset` — create a changeset to document your changes
 
+### Semantic Versioning & Breaking Change Criteria
+
+We strictly follow [Semantic Versioning (SemVer)](https://semver.org/). Before submitting changes, review [`SEMVER.md`](SEMVER.md) for full details on what counts as a breaking change (such as hook signature changes, return shape modifications, or default behavior changes) and the deprecation lifecycle policy.
+
 ### CHANGELOG Entry Format Guide
 
 We follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standard. Whenever you open a PR with user-facing impact (new hooks, bug fixes, breaking changes, or deprecations), please add an entry to [`CHANGELOG.md`](CHANGELOG.md) under `## [Unreleased]`.
