@@ -57,6 +57,8 @@ export function StellarHooksProvider({
   networkPassphrase: initialNetworkPassphrase,
   customConfig: initialCustomConfig,
   cacheAdapter,
+  middleware,
+  walletAdapters,
   children,
 }: StellarHooksProviderProps) {
   const defaultNetwork = initialNetwork || 
@@ -134,8 +136,18 @@ export function StellarHooksProvider({
   }, [network, customHorizonUrl, customSorobanRpcUrl, customPassphrase]);
 
   const value = useMemo<StellarContextInternalValue>(
-    () => ({ config, network, switchNetwork, networkVersion, networkEpoch, requestCache, cacheAdapter }),
-    [config, network, switchNetwork, networkVersion, networkEpoch, requestCache, cacheAdapter]
+    () => ({
+      config,
+      network,
+      switchNetwork,
+      networkVersion,
+      networkEpoch,
+      requestCache,
+      cacheAdapter,
+      middleware,
+      walletAdapters,
+    }),
+    [config, network, switchNetwork, networkVersion, networkEpoch, requestCache, cacheAdapter, middleware, walletAdapters]
   );
 
   const registerHookActivity = useCallback(
@@ -212,6 +224,8 @@ export function StellarProvider({
   network = "testnet",
   customConfig,
   cacheAdapter,
+  middleware,
+  walletAdapters,
   children,
 }: StellarProviderProps) {
   return (
@@ -219,6 +233,8 @@ export function StellarProvider({
       network={network}
       customConfig={customConfig}
       cacheAdapter={cacheAdapter}
+      middleware={middleware}
+      walletAdapters={walletAdapters}
     >
       {children}
     </StellarHooksProvider>
