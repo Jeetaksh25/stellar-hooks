@@ -1,0 +1,11 @@
+{
+  "projectName": "stellar-hooks",
+  "projectOwner": "dark-princezz",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["CONTRIBUTORS.md"],
+  "imageSize": 80,
+  "commit": false,
+  "contributorsPerLine": 7,
+  "contributors": []
+}

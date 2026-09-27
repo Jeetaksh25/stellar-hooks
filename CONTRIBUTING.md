@@ -305,6 +305,11 @@ Maintainers and contributors triaging new issues should follow our [Issue Triage
 ## Code Review
 
 
+## Recognition, Bounties & Community
+
+- Everyone who lands a PR is credited in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+- Some `good first issue` items carry a small bounty — see [BOUNTIES.md](BOUNTIES.md).
+- Roadmap progress is shared monthly — see [COMMUNITY.md](COMMUNITY.md).
 
 ## Code of Conduct
 
