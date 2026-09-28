@@ -48,7 +48,17 @@ export default defineConfig([
   {
     entry,
     format: ["cjs", "esm"],
-    dts: { only: true },
+    // Emit .d.ts.map files alongside each .d.ts so editors can jump straight
+    // to the hook source rather than the compiled declaration file.
+    // Resolves issue #831.
+    dts: {
+      only: true,
+      compilerOptions: {
+        // Ensure declaration maps (.d.ts.map) are emitted even when tsup
+        // takes ownership of the TypeScript compilation step.
+        declarationMap: true,
+      },
+    },
     clean: false,
     external,
   },

@@ -254,6 +254,13 @@ export type {
   // Account
   StellarAccountData,
   StellarBalance,
+  // Amounts (branded — issue #829)
+  WholeUnitAmount,
+  StroopAmount,
+  Amount,
+  // Hook state discriminated unions (issue #830)
+  HookState,
+  HookStateWithRefetch,
   // Wallet
   FreighterState,
   UseFreighterOptions,
@@ -379,6 +386,24 @@ export {
   useFormatAmount,
 } from "./utils";
 export type { HookSandboxInfo, CacheAdapter, FormatAssetAmountOptions } from "./utils";
+
+// Branded type factory functions (issue #829)
+export {
+  asPublicKey,
+  asContractId,
+  asXdrString,
+  asTxHash,
+  asAssetIssuer,
+  asWholeUnitAmount,
+  asStroopAmount,
+  unsafeAsPublicKey,
+  unsafeAsContractId,
+  unsafeAsXdrString,
+  unsafeAsTxHash,
+  unsafeAsAssetIssuer,
+  unsafeAsWholeUnitAmount,
+  unsafeAsStroopAmount,
+} from "./types";
 
 // Debug logger
 export {

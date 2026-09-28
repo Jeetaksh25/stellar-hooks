@@ -60,16 +60,23 @@ import {
   type StellarXdrString,
   type StellarTxHash,
   type StellarAssetIssuer,
+  type WholeUnitAmount,
+  type StroopAmount,
+  type Amount,
   asPublicKey,
   asContractId,
   asXdrString,
   asTxHash,
   asAssetIssuer,
+  asWholeUnitAmount,
+  asStroopAmount,
   unsafeAsPublicKey,
   unsafeAsContractId,
   unsafeAsXdrString,
   unsafeAsTxHash,
   unsafeAsAssetIssuer,
+  unsafeAsWholeUnitAmount,
+  unsafeAsStroopAmount,
 } from "./branded";
 
 export {
@@ -78,16 +85,23 @@ export {
   type StellarXdrString,
   type StellarTxHash,
   type StellarAssetIssuer,
+  type WholeUnitAmount,
+  type StroopAmount,
+  type Amount,
   asPublicKey,
   asContractId,
   asXdrString,
   asTxHash,
   asAssetIssuer,
+  asWholeUnitAmount,
+  asStroopAmount,
   unsafeAsPublicKey,
   unsafeAsContractId,
   unsafeAsXdrString,
   unsafeAsTxHash,
   unsafeAsAssetIssuer,
+  unsafeAsWholeUnitAmount,
+  unsafeAsStroopAmount,
 };
 
 /**
@@ -262,11 +276,16 @@ export interface StellarAccountData {
 /**
  * A single balance entry from a Stellar account.
  *
+ * The `balance`, `buyingLiabilities`, and `sellingLiabilities` fields are
+ * branded as {@link WholeUnitAmount} — whole-unit values with up to 7 decimal
+ * places — so the TypeScript compiler prevents them from being accidentally
+ * mixed with stroop amounts (e.g. transaction fees).
+ *
  * @example
  * ```ts
  * const { xlmBalance } = useStellarBalance(publicKey);
  * if (xlmBalance) {
- *   console.log(xlmBalance.balance);      // "100.0000000"
+ *   console.log(xlmBalance.balance);      // "100.0000000" (WholeUnitAmount)
  *   console.log(xlmBalance.balanceFloat); // 100
  *   console.log(xlmBalance.isNative);     // true
  * }
@@ -279,19 +298,105 @@ export interface StellarBalance {
   assetCode?: string;
   /** Issuer public key (G...) for non-native assets. Undefined for native XLM. */
   assetIssuer?: StellarAssetIssuer;
-  /** Balance as a numeric string with 7 decimal places (e.g. `"100.0000000"`). */
-  balance: string;
+  /**
+   * Balance as a branded {@link WholeUnitAmount} string with up to 7 decimal places
+   * (e.g. `"100.0000000"`).
+   *
+   * The `WholeUnitAmount` brand prevents this from being passed directly to
+   * APIs or arithmetic that expect stroops, catching unit-mismatch bugs at compile time.
+   */
+  balance: WholeUnitAmount;
   /** Balance pre-parsed as a floating-point number for convenience (e.g. `100`). */
   balanceFloat: number;
-  /** Outstanding buy-side liabilities (amount reserved in open buy offers). */
-  buyingLiabilities: string;
-  /** Outstanding sell-side liabilities (amount reserved in open sell offers). */
-  sellingLiabilities: string;
+  /**
+   * Outstanding buy-side liabilities (amount reserved in open buy offers),
+   * expressed as a {@link WholeUnitAmount}.
+   */
+  buyingLiabilities: WholeUnitAmount;
+  /**
+   * Outstanding sell-side liabilities (amount reserved in open sell offers),
+   * expressed as a {@link WholeUnitAmount}.
+   */
+  sellingLiabilities: WholeUnitAmount;
   /** Trustline limit for non-native assets. Undefined for native XLM. */
-  limit?: string;
+  limit?: WholeUnitAmount;
   /** `true` when this entry represents the native XLM balance. */
   isNative: boolean;
 }
+
+// ─── Discriminated Union Hook States (#830) ───────────────────────────────────
+
+/**
+ * A discriminated union representing the three possible states of a read hook:
+ * loading, error, or success. Replaces separate `isLoading / error / data`
+ * flags with a single `status` discriminant, enabling exhaustive `switch`
+ * statements and narrowing of `data` and `error` in each branch.
+ *
+ * @typeParam T - The shape of the successfully loaded data.
+ *
+ * @example
+ * ```tsx
+ * import type { HookState } from "stellar-hooks";
+ * import { useStellarAccount } from "stellar-hooks";
+ *
+ * function AccountCard({ publicKey }: { publicKey: string }) {
+ *   const state = useStellarAccount(publicKey).state;
+ *   switch (state.status) {
+ *     case "loading": return <Spinner />;
+ *     case "error":   return <p>Error: {state.error.message}</p>;
+ *     case "success": return <p>Seq: {state.data.sequence}</p>;
+ *   }
+ * }
+ * ```
+ */
+export type HookState<T> =
+  | {
+      /** The hook is fetching data for the first time. */
+      status: "loading";
+      data: null;
+      error: null;
+    }
+  | {
+      /** The most recent fetch failed and no data is available. */
+      status: "error";
+      data: null;
+      error: Error;
+    }
+  | {
+      /** Data was successfully fetched. */
+      status: "success";
+      data: T;
+      error: null;
+    };
+
+/**
+ * Like {@link HookState} but includes a `"refetching"` state for hooks that
+ * support background re-validation while keeping previously loaded data visible.
+ *
+ * @typeParam T - The shape of the successfully loaded data.
+ *
+ * @example
+ * ```tsx
+ * const state = useStellarBalance(publicKey).state;
+ * switch (state.status) {
+ *   case "loading":    return <Spinner />;
+ *   case "error":      return <ErrorBanner error={state.error} />;
+ *   case "refetching": return <BalanceCard data={state.data} stale />;
+ *   case "success":    return <BalanceCard data={state.data} />;
+ * }
+ * ```
+ */
+export type HookStateWithRefetch<T> =
+  | HookState<T>
+  | {
+      /**
+       * Previously-loaded data is still shown while a background re-fetch runs.
+       * Unlike `"loading"`, `data` is never `null` here.
+       */
+      status: "refetching";
+      data: T;
+      error: null;
+    };
 
 // ─── Wallet / Freighter ───────────────────────────────────────────────────────
 
