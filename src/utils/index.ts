@@ -6,7 +6,7 @@
 
 import type { Horizon } from "@stellar/stellar-sdk";
 import type { StellarAccountData } from "../types";
-import { unsafeAsPublicKey, unsafeAsAssetIssuer } from "../types";
+import { unsafeAsPublicKey, unsafeAsAssetIssuer, unsafeAsWholeUnitAmount } from "../types";
 
 export {
   validatePublicKey,
@@ -45,15 +45,19 @@ export function parseAccountResponse(raw: Horizon.AccountResponse): StellarAccou
           assetType: b.asset_type,
           ...(isAsset && { assetCode: (b as Horizon.HorizonApi.BalanceLineAsset).asset_code }),
           ...(isAsset && { assetIssuer: unsafeAsAssetIssuer((b as Horizon.HorizonApi.BalanceLineAsset).asset_issuer) }),
-          balance: b.balance,
+          balance: unsafeAsWholeUnitAmount(b.balance),
           balanceFloat: parseBalance(b.balance),
-          buyingLiabilities: isAsset || b.asset_type === "native"
-            ? (b as Horizon.HorizonApi.BalanceLineAsset | Horizon.HorizonApi.BalanceLineNative).buying_liabilities
-            : "0",
-          sellingLiabilities: isAsset || b.asset_type === "native"
-            ? (b as Horizon.HorizonApi.BalanceLineAsset | Horizon.HorizonApi.BalanceLineNative).selling_liabilities
-            : "0",
-          ...(isAsset && { limit: (b as Horizon.HorizonApi.BalanceLineAsset).limit }),
+          buyingLiabilities: unsafeAsWholeUnitAmount(
+            isAsset || b.asset_type === "native"
+              ? (b as Horizon.HorizonApi.BalanceLineAsset | Horizon.HorizonApi.BalanceLineNative).buying_liabilities
+              : "0"
+          ),
+          sellingLiabilities: unsafeAsWholeUnitAmount(
+            isAsset || b.asset_type === "native"
+              ? (b as Horizon.HorizonApi.BalanceLineAsset | Horizon.HorizonApi.BalanceLineNative).selling_liabilities
+              : "0"
+          ),
+          ...(isAsset && { limit: unsafeAsWholeUnitAmount((b as Horizon.HorizonApi.BalanceLineAsset).limit) }),
           isNative: b.asset_type === "native",
         };
       }),
