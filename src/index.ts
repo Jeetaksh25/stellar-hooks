@@ -331,6 +331,10 @@ export type {
   WalletInfo,
   WalletAdapterPlugin,
   CustomWalletAdapterInput,
+  // Strict-null disconnected-state types (issue #832)
+  WalletConnectionState,
+  ConnectedWalletState,
+  DisconnectedWalletState,
 } from "./wallets";
 export {
   defineWalletAdapter,

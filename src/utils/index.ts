@@ -2,6 +2,11 @@
  * @file index.ts
  * @description Utility functions for the stellar-hooks library.
  * @package stellar-hooks
+ *
+ * @internal
+ * This module is an implementation detail. Import utilities from the
+ * top-level `stellar-hooks` entry point, not from this path directly.
+ * Internal paths are blocked via the package.json `"exports"` map.
  */
 
 import type { Horizon } from "@stellar/stellar-sdk";
