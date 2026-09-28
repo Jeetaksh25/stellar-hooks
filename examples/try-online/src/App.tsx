@@ -119,7 +119,12 @@ function AccountViewerExample() {
   if (isLoading) {
     return (
       <div style={styles.accountCard}>
-        <h3>Loading Account...</h3>
+        <div className="skeleton skeleton-text large" style={{ width: "20%" }} />
+        <div style={{ marginTop: "12px" }}>
+          <div className="skeleton skeleton-text" style={{ width: "80%" }} />
+          <div className="skeleton skeleton-text" style={{ width: "60%", marginTop: "8px" }} />
+          <div className="skeleton skeleton-text" style={{ width: "50%", marginTop: "8px" }} />
+        </div>
       </div>
     );
   }
@@ -191,7 +196,7 @@ function BalanceViewerExample() {
   if (isLoading) {
     return (
       <div style={styles.accountCard}>
-        <h3>Loading Balance...</h3>
+        <div className="skeleton skeleton-text large" style={{ width: "15%" }} />
       </div>
     );
   }
@@ -328,6 +333,13 @@ function SimplePaymentExample() {
         </div>
       )}
 
+      {/* Transaction status announcements (screen readers) */}
+      <div aria-live="polite" aria-atomic="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+        {isLoading && "Sending payment…"}
+        {isSuccess && hash && `Payment sent! Transaction hash: ${hash}`}
+        {isError && error && `Error: ${error.message}`}
+      </div>
+
       {isSuccess && hash && (
         <div style={styles.successBox}>
           <p>✅ Payment sent!</p>
@@ -345,6 +357,7 @@ function SimplePaymentExample() {
         onClick={handleSubmit}
         disabled={isLoading}
         style={{ ...styles.btnPrimary, width: "100%" }}
+        aria-live="polite"
       >
         {isLoading ? "Sending..." : "💸 Send Payment"}
       </button>
@@ -610,7 +623,8 @@ const styles = {
     color: "#94a3b8",
     cursor: "pointer",
     fontWeight: "500",
-    transition: "all 0.2s",
+    transition: "box-shadow 0.15s ease, transform 0.1s ease, all 0.2s",
+    outline: "none",
   },
   exampleBtnActive: {
     padding: "10px 20px",
@@ -620,7 +634,22 @@ const styles = {
     color: "#3b82f6",
     cursor: "pointer",
     fontWeight: "600",
-    transition: "all 0.2s",
+    transition: "box-shadow 0.15s ease, transform 0.1s ease, all 0.2s",
+    outline: "none",
+  },
+  exampleBtn:hover: {
+    boxShadow: "0 0 0 3px rgba(51, 65, 85, 0.3)",
+    transform: "translateY(-1px)",
+  },
+  exampleBtn:focus: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.4)",
+  },
+  exampleBtnActive:hover: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.4)",
+    transform: "translateY(-1px)",
+  },
+  exampleBtnActive:focus: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.5)",
   },
   main: {
     display: "flex",
@@ -717,6 +746,12 @@ const styles = {
     color: "#e2e8f0",
     fontSize: "1rem",
     boxSizing: "border-box",
+    outline: "none",
+    transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+  },
+  input:focus: {
+    border-color: "#3b82f6",
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.3)",
   },
   hint: {
     display: "block",
@@ -740,6 +775,15 @@ const styles = {
     color: "#94a3b8",
     cursor: "pointer",
     fontSize: "0.875rem",
+    transition: "box-shadow 0.15s ease, transform 0.1s ease",
+    outline: "none",
+  },
+  slippageBtn:hover: {
+    boxShadow: "0 0 0 3px rgba(51, 65, 85, 0.3)",
+    transform: "translateY(-1px)",
+  },
+  slippageBtn:focus: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.4)",
   },
   slippageBtnActive: {
     padding: "6px 12px",
@@ -750,6 +794,7 @@ const styles = {
     cursor: "pointer",
     fontSize: "0.875rem",
     fontWeight: "600",
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.3)",
   },
   statusBanner: {
     padding: "12px",
@@ -804,7 +849,24 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
     fontSize: "1rem",
-    transition: "all 0.2s",
+    transition: "box-shadow 0.15s ease, transform 0.1s ease, all 0.2s",
+    outline: "none",
+  },
+  btnPrimary:hover: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.3)",
+    transform: "translateY(-1px)",
+  },
+  btnPrimary:focus: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.4)",
+  },
+  btnPrimary:focus:not(:disabled):hover: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.4), 0 0 0 5px rgba(59, 130, 246, 0.2)",
+  },
+  btnPrimary:disabled: {
+    background: "#64748b",
+    boxShadow: "none",
+    transform: "none",
+    cursor: "not-allowed",
   },
   btnSecondary: {
     padding: "8px 16px",
@@ -815,6 +877,27 @@ const styles = {
     fontWeight: "500",
     cursor: "pointer",
     fontSize: "0.875rem",
+    transition: "box-shadow 0.15s ease, transform 0.1s ease",
+    outline: "none",
+  },
+  btnSecondary:hover: {
+    boxShadow: "0 0 0 3px rgba(71, 85, 105, 0.3)",
+    transform: "translateY(-1px)",
+  },
+  btnSecondary:focus: {
+    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.4)",
+  },
+  btnSecondary:focus:hover: {
+    boxShadow: "0 0 0 3px rgba(71, 85, 105, 0.4)",
+  },
+  btnSecondary:focus:not(:disabled):hover: {
+    boxShadow: "0 0 0 3px rgba(71, 85, 105, 0.4), 0 0 0 5px rgba(59, 130, 246, 0.2)",
+  },
+  btnSecondary:disabled: {
+    background: "#475569",
+    boxShadow: "none",
+    transform: "none",
+    cursor: "not-allowed",
   },
   footer: {
     textAlign: "center",

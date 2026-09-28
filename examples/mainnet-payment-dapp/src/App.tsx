@@ -36,7 +36,39 @@ function WalletSection() {
 
   if (!isConnected) {
     return (
-      <button onClick={connect} disabled={isLoading}>
+      <button
+        onClick={connect}
+        disabled={isLoading}
+        style={{
+          padding: "0.5rem 1rem",
+          borderRadius: 6,
+          border: "2px solid #2563eb",
+          background: "#fff",
+          color: "#1e40af",
+          fontWeight: 600,
+          cursor: "pointer",
+          fontSize: "1rem",
+          outline: "none",
+          transition: "box-shadow 0.15s ease, transform 0.1s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+          e.currentTarget.style.borderColor = "#1d4ed8";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+          e.currentTarget.style.borderColor = "#2563eb";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
         {isLoading ? "Connecting…" : "Connect Freighter Wallet"}
       </button>
     );
@@ -50,7 +82,41 @@ function WalletSection() {
       {networkPassphraseMismatch && networkPassphraseWarning && (
         <p className="warn">{networkPassphraseWarning}</p>
       )}
-      <button onClick={disconnect}>Disconnect Wallet</button>
+      <button
+        onClick={disconnect}
+        style={{
+          padding: "0.5rem 1rem",
+          borderRadius: 6,
+          border: "2px solid #dc2626",
+          background: "#fff",
+          color: "#991b1b",
+          fontWeight: 600,
+          cursor: "pointer",
+          fontSize: "1rem",
+          outline: "none",
+          transition: "box-shadow 0.15s ease, transform 0.1s ease",
+          marginTop: "0.75rem",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(220, 38, 38, 0.3)";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(220, 38, 38, 0.3)";
+          e.currentTarget.style.borderColor = "#b91c1c";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+          e.currentTarget.style.borderColor = "#dc2626";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        Disconnect Wallet
+      </button>
       {error && <p className="error">{error.message}</p>}
     </div>
   );
@@ -82,7 +148,38 @@ function BalanceSection({ publicKey }: { publicKey: string }) {
           </ul>
         </div>
       )}
-      <button onClick={refetch}>Refresh Balances</button>
+      <button
+        onClick={refetch}
+        style={{
+          padding: "0.5rem 1rem",
+          borderRadius: 6,
+          border: "1px solid #d1d5db",
+          background: "#f9fafb",
+          fontWeight: 600,
+          fontSize: "0.9rem",
+          cursor: "pointer",
+          outline: "none",
+          transition: "box-shadow 0.15s ease, transform 0.1s ease",
+          marginTop: "0.75rem",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        Refresh Balances
+      </button>
     </section>
   );
 }
@@ -121,7 +218,24 @@ function PaymentSection() {
             placeholder="G..."
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", marginTop: "0.25rem" }}
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginTop: "0.25rem",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              fontSize: "1rem",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.borderColor = "#2563eb";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = "#d1d5db";
+            }}
             required
           />
         </div>
@@ -136,7 +250,24 @@ function PaymentSection() {
             placeholder="1.0"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", marginTop: "0.25rem" }}
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginTop: "0.25rem",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              fontSize: "1rem",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.borderColor = "#2563eb";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = "#d1d5db";
+            }}
             required
           />
         </div>
@@ -150,17 +281,73 @@ function PaymentSection() {
             placeholder="Payment description"
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", marginTop: "0.25rem" }}
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginTop: "0.25rem",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              fontSize: "1rem",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.borderColor = "#2563eb";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = "#d1d5db";
+            }}
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading || !destination || !amount}
-          style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
+          style={{
+            padding: "0.5rem 1rem",
+            cursor: "pointer",
+            borderRadius: 6,
+            border: "none",
+            background: isLoading || !destination || !amount ? "#9ca3af" : "#2563eb",
+            color: isLoading || !destination || !amount ? "#6b7280" : "#fff",
+            fontWeight: 600,
+            fontSize: "1rem",
+            outline: "none",
+            transition: "box-shadow 0.15s ease, transform 0.1s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading && destination && amount) {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+          onFocus={(e) => {
+            if (!isLoading && destination && amount) {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+            }
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
         >
           {isLoading ? "Submitting Payment…" : "Send Mainnet XLM"}
         </button>
+
+        {/* Transaction status announcements (screen readers) */}
+        <div aria-live="polite" aria-atomic="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+          {status === "idle" && "Ready to send payment"}
+          {status === "submitting" && "Submitting payment to network…"}
+          {status === "polling" && "Waiting for confirmation…"}
+          {isSuccess && hash && `Payment submitted successfully. Transaction hash: ${hash.slice(0, 10)}…${hash.slice(-8)}`}
+          {isError && error && `Payment failed. ${error.message}`}
+        </div>
 
         {isSuccess && (
           <div style={{ color: "green", marginTop: "1rem" }}>
@@ -177,14 +364,78 @@ function PaymentSection() {
                 </a>
               </p>
             )}
-            <button type="button" onClick={reset}>Send Another</button>
+            <button
+              type="button"
+              onClick={reset}
+              style={{
+                padding: "0.5rem 1rem",
+                borderRadius: 6,
+                border: "1px solid #d1d5db",
+                background: "#f9fafb",
+                fontWeight: 600,
+                fontSize: "0.9rem",
+                cursor: "pointer",
+                outline: "none",
+                transition: "box-shadow 0.15s ease, transform 0.1s ease",
+                marginLeft: "0.75rem",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              Send Another
+            </button>
           </div>
         )}
 
         {isError && error && (
           <div style={{ color: "red", marginTop: "1rem" }}>
             <p className="error">❌ Payment failed: {error.message}</p>
-            <button type="button" onClick={reset}>Try Again</button>
+            <button
+              type="button"
+              onClick={reset}
+              style={{
+                padding: "0.5rem 1rem",
+                borderRadius: 6,
+                border: "1px solid #d1d5db",
+                background: "#f9fafb",
+                fontWeight: 600,
+                fontSize: "0.9rem",
+                cursor: "pointer",
+                outline: "none",
+                transition: "box-shadow 0.15s ease, transform 0.1s ease",
+                marginLeft: "0.75rem",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              Try Again
+            </button>
           </div>
         )}
       </form>

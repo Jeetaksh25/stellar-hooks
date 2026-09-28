@@ -17,10 +17,19 @@ import type {
   StellarXdrString, 
   StellarTxHash, 
   StellarTransactionError,
-  StellarPublicKey 
+  StellarPublicKey,
+  OnBeforeSubmitCallback,
+  OnAfterSubmitCallback,
 } from "../types";
 import { asTxHash, unsafeAsXdrString } from "../types";
 import { sleep, backoff } from "../utils";
+import { logger } from "../utils/logger";
+import {
+  type TransactionMiddleware,
+  type TransactionMiddlewareContext,
+  TransactionPipeline,
+  getRegisteredTransactionMiddleware,
+} from "../middleware";
 
 // ─── Enhanced Status Types ────────────────────────────────────────────────────────────
 
@@ -77,6 +86,12 @@ export interface UseTransactionLifecycleOptions {
   maxRetries?: number;
   /** Multiplier for exponential backoff on retries. Default: 1.5 */
   backoffMultiplier?: number;
+  /** Additional transaction middleware to execute for this hook instance */
+  middleware?: TransactionMiddleware[];
+  /** Callback fired before transaction submission. Return false to abort submission. */
+  onBeforeSubmit?: OnBeforeSubmitCallback;
+  /** Callback fired after transaction submission finishes or fails. */
+  onAfterSubmit?: OnAfterSubmitCallback;
   /** Callback fired when the transaction is successfully confirmed on-chain. */
   onSuccess?: (hash: string) => void;
   /** Callback fired when an error occurs at any stage. */
@@ -269,12 +284,16 @@ export function useTransactionLifecycle<TResult = unknown>(
     timeoutSeconds = 60,
     maxRetries = 3,
     backoffMultiplier = 1.5,
+    middleware = [],
+    onBeforeSubmit,
+    onAfterSubmit,
     onSuccess,
     onError,
     onSimulationComplete,
   } = options;
 
-  const { config } = useStellarContext();
+  const stellarContext = useStellarContext();
+  const { config } = stellarContext;
   const { signTransaction: freighterSign, publicKey } = useFreighter();
   const [state, dispatch] = useReducer(lifecycleReducer<TResult>, initialLifecycleState);
 
@@ -352,112 +371,130 @@ export function useTransactionLifecycle<TResult = unknown>(
       dispatch({ type: "LIFECYCLE_STATUS", payload: "signing" });
 
       try {
-        const signedXdr = await freighterSign(xdr, { networkPassphrase: config.networkPassphrase });
-        dispatch({ type: "LIFECYCLE_STATUS", payload: "signing_success" });
-        return signedXdr;
-      } catch (err) {
-        const error: StellarTransactionError = {
-          type: "network",
-          message: err instanceof Error ? err.message : String(err),
-        };
-        dispatch({ type: "LIFECYCLE_STATUS", payload: "signing_failed" });
-        dispatch({ type: "ERROR", payload: error });
-        onError?.(error);
-        throw error;
-      }
-    },
-    [freighterSign, config.networkPassphrase, onError]
-  );
-
-  const submit = useCallback(
+        const signedXdr = await freighterSign(xdr, { networkPassphrase: config.n  const submit = useCallback(
     async (signedXdr: StellarXdrString): Promise<void> => {
+      if (onBeforeSubmit) {
+        const shouldProceed = await onBeforeSubmit({ signedXdr, mode });
+        if (shouldProceed === false) {
+          dispatch({ type: "RESET" });
+          return;
+        }
+      }
+
       dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting" });
 
+      const pipeline = new TransactionPipeline([
+        ...getRegisteredTransactionMiddleware(),
+        ...(stellarContext.middleware ?? []),
+        ...middleware,
+      ]);
+
+      const middlewareContext: TransactionMiddlewareContext = {
+        signedXdr,
+        networkPassphrase: config.networkPassphrase,
+        mode,
+        meta: {},
+      };
+
       try {
-        if (mode === "soroban") {
-          const rpcServer = new rpc.Server(config.sorobanRpcUrl);
-          const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
+        await pipeline.execute(middlewareContext, async () => {
+          if (mode === "soroban") {
+            const rpcServer = new rpc.Server(config.sorobanRpcUrl);
+            const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
 
-          const sendResult = await rpcServer.sendTransaction(tx);
+            const sendResult = await rpcServer.sendTransaction(tx);
 
-          if (sendResult.status === "ERROR") {
-            const error: StellarTransactionError = {
-              type: "network",
-              message: `Submission failed: ${JSON.stringify(sendResult.errorResult)}`,
-            };
-            dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting_failed" });
-            dispatch({ type: "ERROR", payload: error });
-            onError?.(error);
-            return;
-          }
-
-          dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting_success" });
-          dispatch({ type: "LIFECYCLE_STATUS", payload: "polling" });
-
-          const txHash = sendResult.hash;
-          const deadline = Date.now() + timeoutSeconds * 1000;
-          let attempt = 0;
-          let consecutiveFailures = 0;
-
-          while (Date.now() < deadline) {
-            await sleep(backoff(attempt));
-            attempt++;
-
-            let getResult;
-            try {
-              getResult = await rpcServer.getTransaction(txHash);
-              consecutiveFailures = 0;
-            } catch (pollingErr) {
-              consecutiveFailures++;
-              const isNetworkError = pollingErr instanceof Error && 
-                (pollingErr.message.includes("NetworkError") || 
-                 pollingErr.message.includes("ECONNREFUSED") || 
-                 pollingErr.message.includes("timeout") || 
-                 pollingErr.message.includes("fetch"));
-                
-              if (isNetworkError && consecutiveFailures <= maxRetries) {
-                console.warn(`[useTransactionLifecycle] Polling network error. Retry ${consecutiveFailures}/${maxRetries}...`);
-                const retryDelay = 1000 * Math.pow(backoffMultiplier, consecutiveFailures);
-                await sleep(retryDelay);
-                continue;
-              } else {
-                throw pollingErr;
-              }
-            }
-
-            if (getResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
-              dispatch({ type: "SUCCESS", hash: asTxHash(txHash) });
-              onSuccess?.(txHash);
-              return;
-            }
-
-            if (getResult.status === rpc.Api.GetTransactionStatus.FAILED) {
+            if (sendResult.status === "ERROR") {
               const error: StellarTransactionError = {
-                type: "transaction",
-                resultCode: "unknown",
-                message: `Transaction failed on-chain`,
+                type: "network",
+                message: `Submission failed: ${JSON.stringify(sendResult.errorResult)}`,
               };
+              dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting_failed" });
               dispatch({ type: "ERROR", payload: error });
+              await onAfterSubmit?.({ signedXdr, mode, error, isSuccess: false });
               onError?.(error);
               return;
             }
+
+            dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting_success" });
+            dispatch({ type: "LIFECYCLE_STATUS", payload: "polling" });
+
+            const txHash = sendResult.hash;
+            const deadline = Date.now() + timeoutSeconds * 1000;
+            let attempt = 0;
+            let consecutiveFailures = 0;
+
+            while (Date.now() < deadline) {
+              await sleep(backoff(attempt));
+              attempt++;
+
+              let getResult;
+              try {
+                getResult = await rpcServer.getTransaction(txHash);
+                consecutiveFailures = 0;
+              } catch (pollingErr) {
+                consecutiveFailures++;
+                const isNetworkError =
+                  pollingErr instanceof Error &&
+                  (pollingErr.message.includes("NetworkError") ||
+                    pollingErr.message.includes("ECONNREFUSED") ||
+                    pollingErr.message.includes("timeout") ||
+                    pollingErr.message.includes("fetch"));
+
+                if (isNetworkError && consecutiveFailures <= maxRetries) {
+                  logger.logRetry("useTransactionLifecycle", consecutiveFailures, maxRetries, pollingErr);
+                  console.warn(
+                    `[useTransactionLifecycle] Polling network error. Retry ${consecutiveFailures}/${maxRetries}...`,
+                  );
+                  const retryDelay = 1000 * Math.pow(backoffMultiplier, consecutiveFailures);
+                  await sleep(retryDelay);
+                  continue;
+                } else {
+                  throw pollingErr;
+                }
+              }
+
+              if (getResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
+                logger.logStateTransition("useTransactionLifecycle", "polling", "success", { hash: txHash });
+                dispatch({ type: "SUCCESS", hash: asTxHash(txHash) });
+                await onAfterSubmit?.({ signedXdr, mode, hash: txHash, isSuccess: true });
+                onSuccess?.(txHash);
+                return;
+              }
+
+              if (getResult.status === rpc.Api.GetTransactionStatus.FAILED) {
+                const error: StellarTransactionError = {
+                  type: "transaction",
+                  resultCode: "unknown",
+                  message: `Transaction failed on-chain`,
+                };
+                dispatch({ type: "ERROR", payload: error });
+                await onAfterSubmit?.({ signedXdr, mode, error, isSuccess: false });
+                onError?.(error);
+                return;
+              }
+            }
+
+            const timeoutError: StellarTransactionError = {
+              type: "timeout",
+              message: `Transaction polling timed out after ${timeoutSeconds}s: ${txHash}`,
+            };
+            dispatch({ type: "ERROR", payload: timeoutError });
+            await onAfterSubmit?.({ signedXdr, mode, error: timeoutError, isSuccess: false });
+            onError?.(timeoutError);
+          } else {
+            const horizonServer = new Horizon.Server(config.horizonUrl);
+            const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
+
+            const result = await horizonServer.submitTransaction(
+              tx as Parameters<typeof horizonServer.submitTransaction>[0],
+            );
+            dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting_success" });
+            dispatch({ type: "SUCCESS", hash: asTxHash(result.hash) });
+            await onAfterSubmit?.({ signedXdr, mode, hash: result.hash, isSuccess: true });
+            onSuccess?.(result.hash);
           }
-
-          const timeoutError: StellarTransactionError = {
-            type: "timeout",
-            message: `Transaction polling timed out after ${timeoutSeconds}s: ${txHash}`,
-          };
-          dispatch({ type: "ERROR", payload: timeoutError });
-          onError?.(timeoutError);
-        } else {
-          const horizonServer = new Horizon.Server(config.horizonUrl);
-          const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
-
-          const result = await horizonServer.submitTransaction(tx as Parameters<typeof horizonServer.submitTransaction>[0]);
-          dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting_success" });
-          dispatch({ type: "SUCCESS", hash: asTxHash(result.hash) });
-          onSuccess?.(result.hash);
-        }
+        });
       } catch (err) {
         let error: StellarTransactionError;
         const message = err instanceof Error ? err.message : String(err);
@@ -482,10 +519,23 @@ export function useTransactionLifecycle<TResult = unknown>(
 
         dispatch({ type: "LIFECYCLE_STATUS", payload: "submitting_failed" });
         dispatch({ type: "ERROR", payload: error });
+        await onAfterSubmit?.({ signedXdr, mode, error, isSuccess: false });
         onError?.(error);
       }
     },
-    [mode, config, timeoutSeconds, maxRetries, backoffMultiplier, onSuccess, onError]
+    [
+      mode,
+      config,
+      timeoutSeconds,
+      maxRetries,
+      backoffMultiplier,
+      middleware,
+      stellarContext.middleware,
+      onBeforeSubmit,
+      onAfterSubmit,
+      onSuccess,
+      onError,
+    ],
   );
 
   const execute = useCallback(

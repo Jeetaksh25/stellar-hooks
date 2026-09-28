@@ -117,10 +117,16 @@ export function useIntersectionObserver(
   }, []);
 
   useEffect(() => {
-    if (!element) return;
+    if (!element || typeof window === "undefined") return;
 
     // If triggerOnce is enabled and already triggered, don't observe again
     if (triggerOnce && hasTriggered.current) {
+      return;
+    }
+
+    // Check if IntersectionObserver is available
+    if (typeof IntersectionObserver === "undefined") {
+      console.warn("IntersectionObserver is not supported in this environment");
       return;
     }
 

@@ -5,9 +5,11 @@
  * @license MIT
  */
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useStellarAccount, type UseStellarAccountOptions } from "./useStellarAccount";
 import type { StellarBalance, StellarAccountData, StellarPublicKey } from "../types";
+import { formatAssetAmount, type FormatAssetAmountOptions } from "../utils/formatAmount";
+import { warnDeprecated } from "../utils/deprecation";
 
 export interface UseStellarBalanceReturn {
   balances: StellarBalance[];
@@ -15,9 +17,12 @@ export interface UseStellarBalanceReturn {
   assetBalance: StellarBalance | null;
   data: StellarAccountData | null;
   isLoading: boolean;
+  isRefetching?: boolean;
   error: Error | null;
   lastFetchedAt: Date | null;
   refetch: () => Promise<void>;
+  /** Optional helper to format an amount or balance using locale-aware formatting */
+  formatAmount: (amount?: string | number | StellarBalance | null, options?: FormatAssetAmountOptions) => string;
 }
 
 /**
@@ -82,6 +87,14 @@ export function useStellarBalance(
     "code" in assetOrOptions &&
     "issuer" in assetOrOptions;
 
+  if (isAsset) {
+    warnDeprecated(
+      "useStellarBalance(publicKey, { code, issuer })",
+      "Passing an asset filter to useStellarBalance is deprecated and will be removed in v1.0.0. Use useAssetBalance(publicKey, asset, options) instead. See MIGRATION.md.",
+      { version: "1.0.0" }
+    );
+  }
+
   const asset = isAsset ? (assetOrOptions as { code: string; issuer: string }) : null;
   const accountOptions = isAsset ? options : (assetOrOptions as UseStellarAccountOptions);
 
@@ -103,6 +116,14 @@ export function useStellarBalance(
     );
   }, [balances, asset]);
 
+  const formatAmount = useCallback(
+    (amount?: string | number | StellarBalance | null, opts?: FormatAssetAmountOptions) => {
+      const target = amount !== undefined ? amount : (assetBalance ?? xlmBalance);
+      return formatAssetAmount(target, opts);
+    },
+    [assetBalance, xlmBalance]
+  );
+
   return useMemo(
     () => ({
       balances,
@@ -114,7 +135,8 @@ export function useStellarBalance(
       error,
       lastFetchedAt,
       refetch,
+      formatAmount,
     }),
-    [balances, xlmBalance, assetBalance, account, isLoading, isRefetching, error, lastFetchedAt, refetch]
+    [balances, xlmBalance, assetBalance, account, isLoading, isRefetching, error, lastFetchedAt, refetch, formatAmount]
   );
 }

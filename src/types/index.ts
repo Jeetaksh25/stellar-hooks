@@ -7,6 +7,9 @@
 
 import type { Horizon, xdr, Contract } from "@stellar/stellar-sdk";
 import type * as rpc from "@stellar/stellar-sdk/rpc";
+import type { CacheAdapter } from "../utils/cacheAdapter";
+import type { TransactionMiddleware } from "../middleware";
+import type { CustomWalletAdapterInput } from "../wallets/types";
 
 // ─── Network ──────────────────────────────────────────────────────────────────
 
@@ -598,6 +601,80 @@ export interface LedgerEntryState {
   lastFetchedAt: Date | null;
 }
 
+// ─── Write Hook Lifecycle Callbacks ──────────────────────────────────────────
+
+/**
+ * Context passed to `onBeforeSubmit` lifecycle callback before transaction submission.
+ */
+export interface BeforeSubmitContext<T = unknown> {
+  /** Submission mode: "classic" (Horizon) or "soroban" (RPC) */
+  mode?: "classic" | "soroban";
+  /** Pre-signed transaction XDR string, if already signed at this stage */
+  signedXdr?: StellarXdrString;
+  /** Inner transaction XDR string or built XDR */
+  xdr?: StellarXdrString;
+  /** Hook-specific payload or operations */
+  payload?: T;
+  [key: string]: unknown;
+}
+
+/**
+ * Context passed to `onAfterSubmit` lifecycle callback after transaction submission finishes or fails.
+ */
+export interface AfterSubmitContext<T = unknown> {
+  /** Submission mode: "classic" (Horizon) or "soroban" (RPC) */
+  mode?: "classic" | "soroban";
+  /** Pre-signed transaction XDR string */
+  signedXdr?: StellarXdrString;
+  /** Inner transaction XDR string */
+  xdr?: StellarXdrString;
+  /** Confirmed transaction hash on success, or null */
+  hash?: string | null;
+  /** Error object if submission or polling failed, or null */
+  error?: StellarTransactionError | Error | null;
+  /** Whether the transaction confirmed successfully */
+  isSuccess: boolean;
+  /** Hook-specific payload or operations */
+  payload?: T;
+  [key: string]: unknown;
+}
+
+/**
+ * Callback invoked before transaction submission.
+ * Returning `false` (or a Promise resolving to `false`) cancels/aborts the submission cleanly.
+ */
+export type OnBeforeSubmitCallback<T = unknown> = (
+  context: BeforeSubmitContext<T>
+) => Promise<boolean | void> | boolean | void;
+
+/**
+ * Callback invoked after transaction submission completes (either successfully or with error).
+ */
+export type OnAfterSubmitCallback<T = unknown> = (
+  context: AfterSubmitContext<T>
+) => Promise<void> | void;
+
+/**
+ * Common lifecycle callback options for write hooks.
+ */
+export interface WriteHookLifecycleOptions<T = unknown> {
+  /**
+   * Callback fired before transaction submission.
+   * Can be used to show confirmation modals or trigger analytics.
+   * Return `false` to cancel submission.
+   */
+  onBeforeSubmit?: OnBeforeSubmitCallback<T>;
+  /**
+   * Callback fired after transaction submission completes or errors.
+   * Can be used for post-submission analytics or cleanup.
+   */
+  onAfterSubmit?: OnAfterSubmitCallback<T>;
+  /** Callback fired when the transaction is successfully confirmed. */
+  onSuccess?: (hash: string) => void;
+  /** Callback fired when the transaction fails or an error occurs. */
+  onError?: (error: StellarTransactionError) => void;
+}
+
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 /**
@@ -612,6 +689,12 @@ export interface StellarProviderProps {
    * network passphrase for your deployment.
    */
   customConfig?: CustomNetworkConfig;
+  /** Optional custom cache adapter (e.g. React Query, SWR, or custom store). */
+  cacheAdapter?: CacheAdapter | undefined;
+  /** Optional list of outgoing transaction middleware functions */
+  middleware?: TransactionMiddleware[];
+  /** Optional list of custom third-party wallet adapters or plugins */
+  walletAdapters?: CustomWalletAdapterInput[];
   children: React.ReactNode;
 }
 
@@ -630,6 +713,12 @@ export interface StellarHooksProviderProps {
   networkPassphrase?: string | undefined;
   /** Backward compatible custom config object. */
   customConfig?: CustomNetworkConfig | undefined;
+  /** Optional custom cache adapter (e.g. React Query, SWR, or custom store). */
+  cacheAdapter?: CacheAdapter | undefined;
+  /** Optional list of outgoing transaction middleware functions */
+  middleware?: TransactionMiddleware[];
+  /** Optional list of custom third-party wallet adapters or plugins */
+  walletAdapters?: CustomWalletAdapterInput[];
   children: React.ReactNode;
 }
 
@@ -649,7 +738,14 @@ export interface StellarContextValue {
    * responses from a previous network.
    */
   networkEpoch: number;
+  /** Optional custom cache adapter for cross-hook caching & deduplication. */
+  cacheAdapter?: CacheAdapter | undefined;
+  /** Registered transaction middleware for outgoing transactions */
+  middleware?: TransactionMiddleware[];
+  /** Custom third-party wallet adapters configured on the provider */
+  walletAdapters?: CustomWalletAdapterInput[];
 }
+
 
 export interface HookActivitySnapshot {
   /** Stable internal identifier for a mounted hook instance. */

@@ -48,6 +48,12 @@ export interface UsePaymentOptions {
   timeoutSeconds?: number;
   /** Optional wallet ID to sign with (e.g. "albedo", "freighter", "xbull"). Default: active wallet or freighter */
   walletId?: WalletId;
+  /** Additional transaction middleware to execute for this hook instance */
+  middleware?: import("../middleware").TransactionMiddleware[];
+  /** Callback fired before transaction submission. Return false to abort submission. */
+  onBeforeSubmit?: import("../types").OnBeforeSubmitCallback;
+  /** Callback fired after transaction submission finishes or fails. */
+  onAfterSubmit?: import("../types").OnAfterSubmitCallback;
   /** Callback fired when the transaction is successfully confirmed. */
   onSuccess?: (hash: string) => void;
   /** Callback fired when the transaction fails or an error occurs. */
@@ -143,6 +149,9 @@ export function usePayment(options: UsePaymentOptions): UsePaymentReturn {
     fee = 100,
     timeoutSeconds = 60,
     walletId,
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     onSuccess,
     onError,
   } = options;
@@ -157,6 +166,9 @@ export function usePayment(options: UsePaymentOptions): UsePaymentReturn {
     mode: "classic",
     timeoutSeconds,
     debugLabel: "usePayment",
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     ...(onSuccess && { onSuccess }),
     ...(onError && { onError }),
   });

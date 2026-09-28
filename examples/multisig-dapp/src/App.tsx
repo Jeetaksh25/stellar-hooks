@@ -48,7 +48,40 @@ function MultiSigWorkflow() {
     return (
       <div style={{ textAlign: "center", margin: "2rem 0" }}>
         <p>Connect your wallet to start the multi-signature transaction workflow.</p>
-        <button onClick={connect}>Connect Freighter</button>
+        <button
+          onClick={connect}
+          style={{
+            padding: "0.75rem 1.5rem",
+            borderRadius: 6,
+            border: "2px solid #2563eb",
+            background: "#fff",
+            color: "#1e40af",
+            fontWeight: 600,
+            cursor: "pointer",
+            fontSize: "1rem",
+            outline: "none",
+            transition: "box-shadow 0.15s ease, transform 0.1s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+            e.currentTarget.style.borderColor = "#1d4ed8";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.borderColor = "#2563eb";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          Connect Freighter
+        </button>
       </div>
     );
   }
@@ -107,7 +140,24 @@ function MultiSigWorkflow() {
               placeholder="G..."
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              style={{ width: "100%", padding: "0.4rem", marginTop: "0.2rem" }}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                marginTop: "0.25rem",
+                borderRadius: 6,
+                border: "1px solid #d1d5db",
+                fontSize: "1rem",
+                outline: "none",
+                transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+                e.currentTarget.style.borderColor = "#2563eb";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.borderColor = "#d1d5db";
+              }}
               required
             />
           </div>
@@ -118,11 +168,62 @@ function MultiSigWorkflow() {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              style={{ width: "100%", padding: "0.4rem", marginTop: "0.2rem" }}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                marginTop: "0.25rem",
+                borderRadius: 6,
+                border: "1px solid #d1d5db",
+                fontSize: "1rem",
+                outline: "none",
+                transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+                e.currentTarget.style.borderColor = "#2563eb";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.borderColor = "#d1d5db";
+              }}
               required
             />
           </div>
-          <button type="submit" disabled={isLoading}>
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              padding: "0.55rem 1.25rem",
+              borderRadius: 6,
+              border: "none",
+              background: isLoading ? "#9ca3af" : "#2563eb",
+              color: isLoading ? "#6b7280" : "#fff",
+              fontWeight: 600,
+              fontSize: "1rem",
+              cursor: "pointer",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, transform 0.1s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+            onFocus={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              }
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
             Build Unsigned XDR
           </button>
         </form>
@@ -142,14 +243,62 @@ function MultiSigWorkflow() {
             value={customXdrInput || unsignedXdr || ""}
             onChange={(e) => setCustomXdrInput(e.target.value)}
             placeholder="Build transaction above or paste XDR here..."
-            style={{ width: "100%", fontFamily: "monospace", fontSize: "0.85rem", padding: "0.5rem" }}
+            style={{
+              width: "100%",
+              fontFamily: "monospace",
+              fontSize: "0.85rem",
+              padding: "0.5rem",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              outline: "none",
+              transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.3)";
+              e.currentTarget.style.borderColor = "#2563eb";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = "#d1d5db";
+            }}
           />
         </div>
         <button
           type="button"
           onClick={handleSign}
           disabled={isLoading || (!customXdrInput && !unsignedXdr)}
-          style={{ marginRight: "0.5rem" }}
+          style={{
+            marginRight: "0.5rem",
+            padding: "0.55rem 1.25rem",
+            borderRadius: 6,
+            border: "none",
+            background: isLoading || (!customXdrInput && !unsignedXdr) ? "#9ca3af" : "#8b5cf6",
+            color: isLoading || (!customXdrInput && !unsignedXdr) ? "#6b7280" : "#fff",
+            fontWeight: 600,
+            fontSize: "1rem",
+            cursor: "pointer",
+            outline: "none",
+            transition: "box-shadow 0.15s ease, transform 0.1s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading && (customXdrInput || unsignedXdr)) {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+          onFocus={(e) => {
+            if (!isLoading && (customXdrInput || unsignedXdr)) {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.3)";
+            }
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
         >
           Sign with Connected Wallet
         </button>
@@ -164,11 +313,71 @@ function MultiSigWorkflow() {
           type="button"
           onClick={handleSubmit}
           disabled={isLoading || (!customXdrInput && !unsignedXdr)}
-          style={{ padding: "0.5rem 1rem", cursor: "pointer" }}
+          style={{
+            padding: "0.55rem 1.25rem",
+            borderRadius: 6,
+            border: "none",
+            background: isLoading || (!customXdrInput && !unsignedXdr) ? "#9ca3af" : "#059669",
+            color: isLoading || (!customXdrInput && !unsignedXdr) ? "#6b7280" : "#fff",
+            fontWeight: 600,
+            fontSize: "1rem",
+            cursor: "pointer",
+            outline: "none",
+            transition: "box-shadow 0.15s ease, transform 0.1s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading && (customXdrInput || unsignedXdr)) {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+          onFocus={(e) => {
+            if (!isLoading && (customXdrInput || unsignedXdr)) {
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.3)";
+            }
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
         >
           {isLoading ? "Submitting..." : "Submit Transaction"}
         </button>
-        <button type="button" onClick={reset} style={{ marginLeft: "0.5rem" }}>
+        <button
+          type="button"
+          onClick={reset}
+          style={{
+            marginLeft: "0.5rem",
+            padding: "0.55rem 1.25rem",
+            borderRadius: 6,
+            border: "1px solid #d1d5db",
+            background: "#f9fafb",
+            fontWeight: 600,
+            fontSize: "1rem",
+            cursor: "pointer",
+            outline: "none",
+            transition: "box-shadow 0.15s ease, transform 0.1s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.3)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(148, 163, 184, 0.4)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
           Reset
         </button>
 
@@ -187,6 +396,13 @@ function MultiSigWorkflow() {
             </p>
           </div>
         )}
+
+        {/* Transaction status announcements (screen readers) */}
+        <div aria-live="polite" aria-atomic="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+          {isLoading && "Submitting transaction…"}
+          {isSuccess && hash && `Multisig transaction broadcast successfully! Transaction hash: ${hash}`}
+          {isError && error && `Submission error: ${error.message}`}
+        </div>
 
         {isError && error && (
           <div style={{ color: "red", marginTop: "1rem" }}>

@@ -12,9 +12,24 @@ import { TransactionBuilder, Horizon } from "@stellar/stellar-sdk";
 import * as rpc from "@stellar/stellar-sdk/rpc";
 import { useStellarContext } from "../context";
 import { useHookActivityDebug } from "../devtools/useHookActivityDebug";
-import type { TransactionState, TransactionStatus, StellarXdrString, StellarTxHash, StellarTransactionError } from "../types";
+import type {
+  TransactionState,
+  TransactionStatus,
+  StellarXdrString,
+  StellarTxHash,
+  StellarTransactionError,
+  OnBeforeSubmitCallback,
+  OnAfterSubmitCallback,
+} from "../types";
 import { asTxHash } from "../types";
 import { sleep, backoff } from "../utils";
+import { logger } from "../utils/logger";
+import {
+  type TransactionMiddleware,
+  type TransactionMiddlewareContext,
+  TransactionPipeline,
+  getRegisteredTransactionMiddleware,
+} from "../middleware";
 
 // ─── Options ──────────────────────────────────────────────────────────────────
 
@@ -34,6 +49,12 @@ export interface UseTransactionCoreOptions {
   retryStrategy?: RetryStrategy;
   /** Friendly label shown in the development hook overlay. */
   debugLabel?: string;
+  /** Additional middleware to run before transaction submission */
+  middleware?: TransactionMiddleware[];
+  /** Callback fired before transaction submission. Return false to abort submission. */
+  onBeforeSubmit?: OnBeforeSubmitCallback;
+  /** Callback fired after transaction submission finishes or fails. */
+  onAfterSubmit?: OnAfterSubmitCallback;
   /** Callback fired when the transaction is successfully confirmed. */
   onSuccess?: (hash: string) => void;
   /** Callback fired when the transaction fails or an error occurs. */
@@ -88,11 +109,15 @@ export function useTransactionCore(
     timeoutSeconds = 60,
     retryStrategy = {},
     debugLabel = "useTransactionCore",
+    middleware = [],
+    onBeforeSubmit,
+    onAfterSubmit,
     onSuccess,
     onError,
   } = options;
   const { maxRetries = 3, backoffMultiplier = 1.5 } = retryStrategy;
-  const { config } = useStellarContext();
+  const stellarContext = useStellarContext();
+  const { config } = stellarContext;
   const [state, dispatch] = useReducer(reducer, initial);
 
   useHookActivityDebug({
@@ -103,87 +128,129 @@ export function useTransactionCore(
 
   const submit = useCallback(
     async (signedXdr: StellarXdrString) => {
+      if (onBeforeSubmit) {
+        const shouldProceed = await onBeforeSubmit({ signedXdr, mode });
+        if (shouldProceed === false) {
+          logger.logStateTransition("useTransactionCore", state.status, "idle");
+          dispatch({ type: "RESET" });
+          return;
+        }
+      }
+
+      logger.logStateTransition("useTransactionCore", state.status, "submitting");
       dispatch({ type: "STATUS", payload: "submitting" });
 
+      const pipeline = new TransactionPipeline([
+        ...getRegisteredTransactionMiddleware(),
+        ...(stellarContext.middleware ?? []),
+        ...middleware,
+      ]);
+
+      const middlewareContext: TransactionMiddlewareContext = {
+        signedXdr,
+        networkPassphrase: config.networkPassphrase,
+        mode,
+        meta: {},
+      };
+
       try {
-        if (mode === "soroban") {
-          const server = new rpc.Server(config.sorobanRpcUrl);
-          const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
+        await pipeline.execute(middlewareContext, async () => {
+          if (mode === "soroban") {
+            const server = new rpc.Server(config.sorobanRpcUrl);
+            const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
 
-          const sendResult = await server.sendTransaction(tx);
+            logger.logRpc("sorobanRpc.sendTransaction", { sorobanRpcUrl: config.sorobanRpcUrl });
+            const sendResult = await server.sendTransaction(tx);
 
-          if (sendResult.status === "ERROR") {
-            const error: StellarTransactionError = {
-              type: "network",
-              message: `Submission failed: ${JSON.stringify(sendResult.errorResult)}`,
-            };
-            dispatch({ type: "ERROR", payload: error });
-            onError?.(error);
-            return;
-          }
-
-          const txHash = sendResult.hash;
-          dispatch({ type: "STATUS", payload: "polling" });
-
-          const deadline = Date.now() + timeoutSeconds * 1000;
-          let attempt = 0;
-          let consecutiveFailures = 0;
-
-          while (Date.now() < deadline) {
-            await sleep(backoff(attempt));
-            attempt++;
-
-            let getResult;
-            try {
-              getResult = await server.getTransaction(txHash);
-              consecutiveFailures = 0; // Reset failures on successful network request
-            } catch (pollingErr) {
-              consecutiveFailures++;
-              const isNetworkError = pollingErr instanceof Error && 
-                (pollingErr.message.includes("NetworkError") || pollingErr.message.includes("ECONNREFUSED") || pollingErr.message.includes("timeout") || pollingErr.message.includes("fetch"));
-                
-              if (isNetworkError && consecutiveFailures <= maxRetries) {
-                console.warn(`[useTransactionCore] Polling network error. Retry ${consecutiveFailures}/${maxRetries}...`);
-                const retryDelay = 1000 * Math.pow(backoffMultiplier, consecutiveFailures);
-                await sleep(retryDelay);
-                continue; // Skip the rest of this loop tick and try polling again
-              } else {
-                throw pollingErr; // Exceeded retries or non-network error, bubble up to outer catch
-              }
-            }
-
-            if (getResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
-              dispatch({ type: "SUCCESS", hash: asTxHash(txHash) });
-              onSuccess?.(txHash);
-              return;
-            }
-
-            if (getResult.status === rpc.Api.GetTransactionStatus.FAILED) {
+            if (sendResult.status === "ERROR") {
               const error: StellarTransactionError = {
-                type: "transaction",
-                resultCode: "unknown",
-                message: `Transaction failed on-chain`,
+                type: "network",
+                message: `Submission failed: ${JSON.stringify(sendResult.errorResult)}`,
               };
+              logger.logStateTransition("useTransactionCore", "submitting", "error", error);
               dispatch({ type: "ERROR", payload: error });
+              await onAfterSubmit?.({ signedXdr, mode, error, isSuccess: false });
               onError?.(error);
               return;
             }
+
+            const txHash = sendResult.hash;
+            logger.logStateTransition("useTransactionCore", "submitting", "polling", { txHash });
+            dispatch({ type: "STATUS", payload: "polling" });
+
+            const deadline = Date.now() + timeoutSeconds * 1000;
+            let attempt = 0;
+            let consecutiveFailures = 0;
+
+            while (Date.now() < deadline) {
+              await sleep(backoff(attempt));
+              attempt++;
+
+              let getResult;
+              try {
+                logger.logRpc("sorobanRpc.getTransaction", { txHash, attempt });
+                getResult = await server.getTransaction(txHash);
+                consecutiveFailures = 0; // Reset failures on successful network request
+              } catch (pollingErr) {
+                consecutiveFailures++;
+                const isNetworkError =
+                  pollingErr instanceof Error &&
+                  (pollingErr.message.includes("NetworkError") ||
+                    pollingErr.message.includes("ECONNREFUSED") ||
+                    pollingErr.message.includes("timeout") ||
+                    pollingErr.message.includes("fetch"));
+
+                if (isNetworkError && consecutiveFailures <= maxRetries) {
+                  logger.logRetry("useTransactionCore", consecutiveFailures, maxRetries, pollingErr);
+                  console.warn(
+                    `[useTransactionCore] Polling network error. Retry ${consecutiveFailures}/${maxRetries}...`,
+                  );
+                  const retryDelay = 1000 * Math.pow(backoffMultiplier, consecutiveFailures);
+                  await sleep(retryDelay);
+                  continue; // Skip the rest of this loop tick and try polling again
+                } else {
+                  throw pollingErr; // Exceeded retries or non-network error, bubble up to outer catch
+                }
+              }
+
+              if (getResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
+                logger.logStateTransition("useTransactionCore", "polling", "success", { hash: txHash });
+                dispatch({ type: "SUCCESS", hash: asTxHash(txHash) });
+                await onAfterSubmit?.({ signedXdr, mode, hash: txHash, isSuccess: true });
+                onSuccess?.(txHash);
+                return;
+              }
+
+              if (getResult.status === rpc.Api.GetTransactionStatus.FAILED) {
+                const error: StellarTransactionError = {
+                  type: "transaction",
+                  resultCode: "unknown",
+                  message: `Transaction failed on-chain`,
+                };
+                dispatch({ type: "ERROR", payload: error });
+                await onAfterSubmit?.({ signedXdr, mode, error, isSuccess: false });
+                onError?.(error);
+                return;
+              }
+            }
+
+            const timeoutError: StellarTransactionError = {
+              type: "timeout",
+              message: `Transaction polling timed out after ${timeoutSeconds}s: ${txHash}`,
+            };
+            dispatch({ type: "ERROR", payload: timeoutError });
+            await onAfterSubmit?.({ signedXdr, mode, error: timeoutError, isSuccess: false });
+            onError?.(timeoutError);
+          } else {
+            const server = new Horizon.Server(config.horizonUrl);
+            const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
+
+            const result = await server.submitTransaction(tx as Parameters<typeof server.submitTransaction>[0]);
+            dispatch({ type: "SUCCESS", hash: asTxHash(result.hash) });
+            await onAfterSubmit?.({ signedXdr, mode, hash: result.hash, isSuccess: true });
+            onSuccess?.(result.hash);
           }
-
-          const timeoutError: StellarTransactionError = {
-            type: "timeout",
-            message: `Transaction polling timed out after ${timeoutSeconds}s: ${txHash}`,
-          };
-          dispatch({ type: "ERROR", payload: timeoutError });
-          onError?.(timeoutError);
-        } else {
-          const server = new Horizon.Server(config.horizonUrl);
-          const tx = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
-
-          const result = await server.submitTransaction(tx as Parameters<typeof server.submitTransaction>[0]);
-          dispatch({ type: "SUCCESS", hash: asTxHash(result.hash) });
-          onSuccess?.(result.hash);
-        }
+        });
       } catch (err) {
         let error: StellarTransactionError;
         const message = err instanceof Error ? err.message : String(err);
@@ -207,10 +274,24 @@ export function useTransactionCore(
         }
 
         dispatch({ type: "ERROR", payload: error });
+        await onAfterSubmit?.({ signedXdr, mode, error, isSuccess: false });
         onError?.(error);
       }
     },
-    [mode, config, timeoutSeconds, maxRetries, backoffMultiplier, onSuccess, onError]
+    [
+      mode,
+      config,
+      timeoutSeconds,
+      maxRetries,
+      backoffMultiplier,
+      middleware,
+      stellarContext.middleware,
+      onBeforeSubmit,
+      onAfterSubmit,
+      onSuccess,
+      onError,
+      state.status,
+    ],
   );
 
   const reset = useCallback(() => dispatch({ type: "RESET" }), []);

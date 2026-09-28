@@ -22,7 +22,7 @@ Install the library via your preferred package manager:
 ```bash
 npm install stellar-hooks
 ```
-*(Note: `@stellar/stellar-sdk` and `@stellar/freighter-api` are bundled as direct dependencies, so you don't need to install them separately).*
+*(Note: `@stellar/stellar-sdk` and `@stellar/freighter-api` are bundled as direct dependencies, so you don't need to install them separately. See [`COMPATIBILITY.md`](COMPATIBILITY.md) for supported SDK versions and compatibility matrix).*
 
 ### 2. Wrap Your App in `<StellarProvider>`
 
@@ -835,7 +835,9 @@ See [docs/guides/migration-guide.md](docs/guides/migration-guide.md) for a compr
 6. Run `npm run changeset` to create a changeset note for your change.
 7. If your PR includes code changes, run `npm run build` before opening the PR.
 
-Please review our Contributing Guide and Code of Conduct for more details before opening a pull request.
+Please review our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) for more details before opening a pull request.
+
+See also: [Contributors](CONTRIBUTORS.md) · [Bounty Program](BOUNTIES.md) · [Community Updates](COMMUNITY.md)
 
 ## Documentation
 
@@ -877,7 +879,9 @@ This repository uses Changesets for automated changelog generation, version bump
 
 ## Roadmap
 
-Shipped:
+Track active development and upcoming features on our public **[GitHub Projects Roadmap Board](https://github.com/dark-princezz/stellar-hooks/projects)** and **[GitHub Milestones](https://github.com/dark-princezz/stellar-hooks/milestones)**. For a detailed breakdown of planned items, see [`ROADMAP.md`](ROADMAP.md).
+
+### Shipped
 
 - [x] `useFreighter()` — Freighter wallet connection, signing, and `signMessage`
 - [x] `useWalletKit()` / `useWalletsKit()` / `useWalletConnect()` — multi-wallet adapters (Freighter, Lobstr, xBull, Albedo)
@@ -898,14 +902,24 @@ Shipped:
 - [x] React Query and SWR adapter packages
 - [x] Devtools hook-activity overlay
 
-Planned:
+### Planned by Milestone
 
+#### Milestone `v0.3.0` — Advanced Soroban & Ecosystem Integrations
 - [ ] `useFederation()` — SEP-2 federated address resolution
 - [ ] `useWebAuth()` — SEP-10 challenge/response authentication
+- [ ] `useAllowance()` — Soroban token allowance management
+- [ ] `useContractEvents()` v2 — Enhanced RPC event subscription and filters
+
+#### Milestone `v0.4.0` — Cross-Platform & Streaming Support
 - [ ] `useAnchorTransfer()` — SEP-6 / SEP-24 deposit and withdrawal flows
 - [ ] `useAnchorQuote()` — SEP-38 firm quotes
 - [ ] Streaming (SSE) variants for account, operation, and effect hooks
 - [ ] React Native support for the wallet hooks
+
+#### Milestone `v1.0.0` — Production Readiness & API Stabilization
+- [ ] Universal transaction error taxonomy
+- [ ] 100% test coverage across critical transaction flows
+- [ ] Strict TypeScript typing and declaration maps verification
 
 ## FAQ
 

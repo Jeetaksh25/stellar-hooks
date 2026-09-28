@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file useAccountMerge.test.ts
  * @description Unit tests for the useAccountMerge hook.
  * @package stellar-hooks
@@ -152,6 +152,32 @@ describe("useAccountMerge", () => {
       }
     };
     await expect(submitFn()).rejects.toThrow("Freighter is not connected");
+  });
+
+  it("warns when calling useAccountMerge without destination option", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    useAccountMerge();
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('Deprecation warning: "useAccountMerge() without destination option"')
+    );
+  });
+
+  it("warns when passing confirm option", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    useAccountMerge({ destination: "GDEST...", confirm: true });
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('Deprecation warning: "useAccountMerge({ confirm })"')
+    );
+  });
+
+  it("supports legacy merge() call with deprecation warning", async () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const hook = useAccountMerge();
+    await hook.merge("GLEGACYDEST...", { memo: "closing" });
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('Deprecation warning: "merge(destination, opts)"')
+    );
+    expect(mockSubmitXdr).toHaveBeenCalledWith("signed-xdr");
   });
 });
 

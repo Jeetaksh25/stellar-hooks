@@ -304,6 +304,16 @@ await submit();
 
 **Why:** The old `merge(destination, { confirm: true })` API was inconsistent with every other write hook in the library. The new API aligns with `usePayment`, `useTrade`, `useTrustline`, etc., all of which accept options in the hook call and expose a no-arg `submit()`.
 
+###### Automated Codemod
+
+You can automatically migrate your codebase from the old `useAccountMerge()` signature to the new options pattern using our built-in `jscodeshift` codemod:
+
+```bash
+npx jscodeshift -t ./node_modules/stellar-hooks/codemods/v0.2.0/use-account-merge.js src/ --extensions=ts,tsx,js,jsx --parser=tsx
+```
+
+See [`codemods/README.md`](codemods/README.md) for full codemod usage and options.
+
 #### Deprecations
 
 - `merge` and `confirm` (removed in v0.2.0 — use `submit` and the `destination` option instead).

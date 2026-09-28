@@ -55,8 +55,10 @@ export function useLobstr(options: UseLobstrOptions = {}): UseLobstrReturn {
       setIsInstalled(hasLobstr);
     };
     checkLobstr();
-    window.addEventListener("load", checkLobstr);
-    return () => window.removeEventListener("load", checkLobstr);
+    if (typeof window !== "undefined") {
+      window.addEventListener("load", checkLobstr);
+      return () => window.removeEventListener("load", checkLobstr);
+    }
   }, []);
 
   useHookActivityDebug({

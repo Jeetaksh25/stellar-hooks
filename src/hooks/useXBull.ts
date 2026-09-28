@@ -87,8 +87,10 @@ export function useXBull(options: UseXBullOptions = {}): UseXBullReturn {
       setIsInstalled(hasXBull);
     };
     checkXBull();
-    window.addEventListener("load", checkXBull);
-    return () => window.removeEventListener("load", checkXBull);
+    if (typeof window !== "undefined") {
+      window.addEventListener("load", checkXBull);
+      return () => window.removeEventListener("load", checkXBull);
+    }
   }, []);
 
   useHookActivityDebug({

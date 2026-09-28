@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to **Stellar Hooks**. We appreciate your time and effort in helping improve the project. Whether you're fixing bugs, implementing new features, or enhancing documentation, your contributions are valued.
 
+Before starting work, check out our **[Public Roadmap Board (GitHub Projects)](https://github.com/dark-princezz/stellar-hooks/projects)** and [Milestones](https://github.com/dark-princezz/stellar-hooks/milestones) (or read [`ROADMAP.md`](ROADMAP.md)) to see upcoming milestones and issues ready for development.
+
 ## Getting Started
 
 ### 1. Fork and Clone the Repository
@@ -255,6 +257,31 @@ Keep the description under 70 characters. Reference the issue in the PR body, no
 4. Run `npm run build` — ensure the project builds
 5. Run `npm run changeset` — create a changeset to document your changes
 
+### Semantic Versioning & Breaking Change Criteria
+
+We strictly follow [Semantic Versioning (SemVer)](https://semver.org/). Before submitting changes, review [`SEMVER.md`](SEMVER.md) for full details on what counts as a breaking change (such as hook signature changes, return shape modifications, or default behavior changes) and the deprecation lifecycle policy.
+
+### CHANGELOG Entry Format Guide
+
+We follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standard. Whenever you open a PR with user-facing impact (new hooks, bug fixes, breaking changes, or deprecations), please add an entry to [`CHANGELOG.md`](CHANGELOG.md) under `## [Unreleased]`.
+
+See [`docs/guides/changelog-format-guide.md`](docs/guides/changelog-format-guide.md) or [`CHANGELOG_GUIDE.md`](CHANGELOG_GUIDE.md) for full details.
+
+**Entry structure:**
+```markdown
+- `hookOrModuleName` — concise description of user-facing change ([#PR_NUMBER](https://github.com/dark-princezz/stellar-hooks/pull/PR_NUMBER))
+```
+
+**Allowed categories:**
+- `### Added` — new hooks, functions, or features
+- `### Changed` — non-breaking modifications to existing behavior
+- `### Deprecated` — soon-to-be removed features
+- `### Removed` — previously deprecated features that have been removed
+- `### Fixed` — bug fixes and corrected runtime errors
+- `### Security` — security vulnerability resolutions
+
+Prefix breaking changes with `**Breaking:**` under `### Changed` or `### Removed`.
+
 ### Pull Request Checklist
 
 - [ ] Only changes related to the issue are included
@@ -268,9 +295,21 @@ Keep the description under 70 characters. Reference the issue in the PR body, no
 - [ ] Documentation is updated if necessary
 - [ ] A changeset has been added to document version changes
 
+## Issue Triage & Labeling
+
+Maintainers and contributors triaging new issues should follow our [Issue Triage & Labeling Guide](.github/TRIAGE.md). It outlines:
+- Step-by-step triage workflow (within 48h SLA)
+- Comprehensive label taxonomy (`type:*`, `area:*`, `priority:*`, `status:*`)
+- Canned response templates for missing reproductions and duplicate issues
+
 ## Code Review
 
 
+## Recognition, Bounties & Community
+
+- Everyone who lands a PR is credited in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+- Some `good first issue` items carry a small bounty — see [BOUNTIES.md](BOUNTIES.md).
+- Roadmap progress is shared monthly — see [COMMUNITY.md](COMMUNITY.md).
 
 ## Code of Conduct
 

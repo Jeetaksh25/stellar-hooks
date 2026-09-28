@@ -28,7 +28,7 @@ import type {
   StellarTransactionError,
 } from "../types";
 import { unsafeAsXdrString, asTxHash, unsafeAsTxHash } from "../types";
-import { sleep, backoff, validateContractId } from "../utils";
+import { sleep, backoff, validateContractId, warnDeprecated } from "../utils";
 
 // ─── State ─────────────────────────────────────────────────────────────────────
 
@@ -211,6 +211,14 @@ export function useSorobanContract<TResult = unknown>(
     optimisticResult: baseOptimisticResult,
   } = options;
 
+  if (sorobanRpcServer) {
+    warnDeprecated(
+      "useSorobanContract({ sorobanRpcServer })",
+      "Passing 'sorobanRpcServer' directly is deprecated and will be removed in v1.0.0. Configure the RPC URL via StellarProvider or pass customNetworkConfig instead.",
+      { version: "1.0.0" }
+    );
+  }
+
   const reducer = createReducer<TResult>();
   const [state, dispatch] = useReducer(reducer, {
     status: "idle",
@@ -230,6 +238,46 @@ export function useSorobanContract<TResult = unknown>(
     status: state.status,
     error: state.error,
   });
+
+  // Dev-mode-only warning (issue #779): flag contract IDs with no
+  // deployed WASM the RPC endpoint can see. This can't attest to the
+  // *source* being published/verifiable (there's no on-chain source
+  // registry to check against), but catching a contract ID that doesn't
+  // resolve to any deployed code at all — a typo, wrong network, or an
+  // address that was never actually deployed to — is the checkable subset
+  // of that risk, and the most common way this bites someone in practice.
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" || !contractId) {
+      return;
+    }
+
+    let cancelled = false;
+    const server = sorobanRpcServer ?? new rpc.Server(config.sorobanRpcUrl);
+
+    server
+      .getContractWasmByContractId(contractId)
+      .then((wasm) => {
+        if (!cancelled && !wasm) {
+          console.warn(
+            `[useSorobanContract] No deployed WASM found for contract ID "${contractId}" ` +
+              `on ${config.sorobanRpcUrl}. Double-check the contract ID and network before signing.`
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          console.warn(
+            `[useSorobanContract] Could not verify contract ID "${contractId}" against ` +
+              `${config.sorobanRpcUrl} — it may not be deployed on this network. ` +
+              `Double-check the contract ID and network before signing.`
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [contractId, sorobanRpcServer, config.sorobanRpcUrl]);
 
   const estimateFromSimulation = useCallback(
     (
