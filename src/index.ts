@@ -583,3 +583,38 @@ export type {
   UseWebAuthOptions,
   UseWebAuthReturn,
 } from "./hooks/useWebAuth";
+
+// Storage adapter utilities (#840)
+export {
+  createLocalStorageAdapter,
+  createNullStorageAdapter,
+  createAsyncStorageAdapter,
+  resolveStorageItem,
+} from "./utils/storageAdapter";
+export type { StorageAdapter } from "./utils/storageAdapter";
+
+// Wallet utilities
+export {
+  registerWalletAdapter,
+  unregisterWalletAdapter,
+  getRegisteredWalletAdapters,
+  clearWalletAdapterRegistry,
+  resolveWalletAdapter,
+  defineWalletAdapter,
+  defineWalletPlugin,
+  createAllAdapters,
+  // Deep-link / mobile wallet adapter (#839)
+  createDeepLinkWalletAdapter,
+  buildSep7TxUri,
+  buildSep7PayUri,
+} from "./wallets";
+export type {
+  WalletId,
+  WalletAdapter,
+  WalletMeta,
+  WalletInfo,
+  WalletAdapterPlugin,
+  CustomWalletAdapterInput,
+  // Deep-link types
+  DeepLinkWalletConfig,
+} from "./wallets";

@@ -28,6 +28,14 @@ export {
   getWalletsWithCapability,
 } from "./capabilities";
 
+// Deep-link / mobile wallet adapter (#839)
+export {
+  createDeepLinkWalletAdapter,
+  buildSep7TxUri,
+  buildSep7PayUri,
+} from "./deepLink";
+export type { DeepLinkWalletConfig } from "./deepLink";
+
 import type { WalletAdapter, CustomWalletAdapterInput } from "./types";
 import { getRegisteredWalletAdapters, resolveWalletAdapter } from "./registry";
 import { createFreighterAdapter } from "./freighter";

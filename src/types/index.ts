@@ -10,6 +10,7 @@ import type * as rpc from "@stellar/stellar-sdk/rpc";
 import type { CacheAdapter } from "../utils/cacheAdapter";
 import type { TransactionMiddleware } from "../middleware";
 import type { CustomWalletAdapterInput } from "../wallets/types";
+import type { StorageAdapter } from "../utils/storageAdapter";
 
 // ─── Network ──────────────────────────────────────────────────────────────────
 
@@ -800,6 +801,22 @@ export interface StellarProviderProps {
   middleware?: TransactionMiddleware[];
   /** Optional list of custom third-party wallet adapters or plugins */
   walletAdapters?: CustomWalletAdapterInput[];
+  /**
+   * Optional pluggable storage adapter for persisted state (network selection, custom config).
+   * Defaults to `localStorage`. Supply `createAsyncStorageAdapter(AsyncStorage)` for React Native,
+   * or `createNullStorageAdapter()` to disable persistence entirely.
+   *
+   * @example React Native
+   * ```tsx
+   * import AsyncStorage from "@react-native-async-storage/async-storage";
+   * import { createAsyncStorageAdapter } from "stellar-hooks";
+   *
+   * <StellarProvider storageAdapter={createAsyncStorageAdapter(AsyncStorage)} network="testnet">
+   *   <App />
+   * </StellarProvider>
+   * ```
+   */
+  storageAdapter?: StorageAdapter;
   children: React.ReactNode;
 }
 
@@ -824,6 +841,12 @@ export interface StellarHooksProviderProps {
   middleware?: TransactionMiddleware[];
   /** Optional list of custom third-party wallet adapters or plugins */
   walletAdapters?: CustomWalletAdapterInput[];
+  /**
+   * Optional pluggable storage adapter for persisted state.
+   * Defaults to `localStorage`. Supply `createAsyncStorageAdapter(AsyncStorage)` for React Native,
+   * or `createNullStorageAdapter()` to disable persistence entirely.
+   */
+  storageAdapter?: StorageAdapter;
   children: React.ReactNode;
 }
 
