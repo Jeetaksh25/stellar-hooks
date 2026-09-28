@@ -17,6 +17,11 @@ import type {
 } from "./types";
 import { NETWORK_CONFIGS } from "./types";
 import { emitDevToolsActivity } from "./devtools/devtoolsBridge";
+import {
+  createLocalStorageAdapter,
+  resolveStorageItem,
+} from "./utils/storageAdapter";
+import type { StorageAdapter } from "./utils/storageAdapter";
 
 const NETWORK_STORAGE_KEY = "stellar-hooks:network";
 const CUSTOM_CONFIG_STORAGE_KEY = "stellar-hooks:custom-config";
@@ -59,9 +64,17 @@ export function StellarHooksProvider({
   cacheAdapter,
   middleware,
   walletAdapters,
+  storageAdapter: storageAdapterProp,
   children,
 }: StellarHooksProviderProps) {
-  const defaultNetwork = initialNetwork || 
+  // Use the provided storage adapter, falling back to the default localStorage adapter.
+  const storage: StorageAdapter = useMemo(
+    () => storageAdapterProp ?? createLocalStorageAdapter(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const defaultNetwork = initialNetwork ||
     (initialHorizonUrl || initialSorobanRpcUrl || initialNetworkPassphrase || initialCustomConfig ? "custom" : "testnet");
   const [network, setNetwork] = useState<StellarNetwork>(defaultNetwork);
   
@@ -82,34 +95,45 @@ export function StellarHooksProvider({
   const [networkEpoch, setNetworkEpoch] = useState(0);
   const [hookEntries, setHookEntries] = useState<HookActivitySnapshot[]>([]);
 
+  // Restore persisted network selection from the storage adapter (supports both
+  // synchronous localStorage and asynchronous AsyncStorage for React Native).
   useEffect(() => {
-    const savedNetwork = localStorage.getItem(NETWORK_STORAGE_KEY) as StellarNetwork;
-    if (savedNetwork) setNetwork(savedNetwork);
+    let cancelled = false;
 
-    const savedCustomConfig = localStorage.getItem(CUSTOM_CONFIG_STORAGE_KEY);
-    if (savedCustomConfig) {
-      try {
-        const parsed = JSON.parse(savedCustomConfig) as CustomNetworkConfig;
-        setCustomHorizonUrl(parsed.horizonUrl);
-        setCustomSorobanRpcUrl(parsed.sorobanRpcUrl);
-        setCustomPassphrase(parsed.networkPassphrase);
-      } catch { /* ignore invalid JSON in localStorage */ }
+    async function restorePersistedNetwork() {
+      const savedNetwork = await resolveStorageItem(storage, NETWORK_STORAGE_KEY);
+      if (cancelled) return;
+      if (savedNetwork) setNetwork(savedNetwork as StellarNetwork);
+
+      const savedCustomConfig = await resolveStorageItem(storage, CUSTOM_CONFIG_STORAGE_KEY);
+      if (cancelled) return;
+      if (savedCustomConfig) {
+        try {
+          const parsed = JSON.parse(savedCustomConfig) as CustomNetworkConfig;
+          setCustomHorizonUrl(parsed.horizonUrl);
+          setCustomSorobanRpcUrl(parsed.sorobanRpcUrl);
+          setCustomPassphrase(parsed.networkPassphrase);
+        } catch { /* ignore invalid JSON */ }
+      }
     }
-  }, []);
+
+    restorePersistedNetwork();
+    return () => { cancelled = true; };
+  }, [storage]);
 
   const switchNetwork = useCallback((newNetwork: StellarNetwork, newCustomConfig?: CustomNetworkConfig) => {
     setNetwork(newNetwork);
     setNetworkVersion((v) => v + 1); // Increment version to invalidate in-flight requests
     setNetworkEpoch((e) => e + 1); // Increment epoch to invalidate in-flight query hooks
-    localStorage.setItem(NETWORK_STORAGE_KEY, newNetwork);
+    storage.setItem(NETWORK_STORAGE_KEY, newNetwork);
 
     if (newNetwork === "custom" && newCustomConfig) {
       setCustomHorizonUrl(newCustomConfig.horizonUrl);
       setCustomSorobanRpcUrl(newCustomConfig.sorobanRpcUrl);
       setCustomPassphrase(newCustomConfig.networkPassphrase);
-      localStorage.setItem(CUSTOM_CONFIG_STORAGE_KEY, JSON.stringify(newCustomConfig));
+      storage.setItem(CUSTOM_CONFIG_STORAGE_KEY, JSON.stringify(newCustomConfig));
     }
-  }, []);
+  }, [storage]);
 
   const config = useMemo<NetworkConfig>(() => {
     const presetConfig = network !== "custom" ? NETWORK_CONFIGS[network as keyof typeof NETWORK_CONFIGS] : undefined;
@@ -226,6 +250,7 @@ export function StellarProvider({
   cacheAdapter,
   middleware,
   walletAdapters,
+  storageAdapter,
   children,
 }: StellarProviderProps) {
   return (
@@ -235,6 +260,7 @@ export function StellarProvider({
       cacheAdapter={cacheAdapter}
       middleware={middleware}
       walletAdapters={walletAdapters}
+      storageAdapter={storageAdapter}
     >
       {children}
     </StellarHooksProvider>

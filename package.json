@@ -15,7 +15,10 @@
     "docs:clean": "rm -rf docs/api",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test:testnet": "vitest run tests/integration/testnet"
+    "test:testnet": "vitest run tests/integration/testnet",
+    "check:circular": "node scripts/check-circular-deps.mjs",
+    "check:circular:warn": "node scripts/check-circular-deps.mjs --warn",
+    "check:circular:graph": "node scripts/check-circular-deps.mjs --graph"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -962,6 +965,7 @@
     "jscodeshift": "^17.3.0",
     "jsdom": "^29.1.1",
     "lint-staged": "^15.5.0",
+    "madge": "^8.0.0",
     "msw": "^2.15.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.1",

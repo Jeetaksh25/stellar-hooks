@@ -49,6 +49,7 @@ import type { WalletId, WalletAdapter, WalletInfo, CustomWalletAdapterInput } fr
 import { createAllAdapters } from "../wallets";
 import { asPublicKey, type StellarPublicKey } from "../types";
 import { useOptionalStellarContext } from "../context";
+import { createLocalStorageAdapter } from "../utils/storageAdapter";
 
 // ─── Public API types ──────────────────────────────────────────────────────────
 
@@ -317,32 +318,32 @@ export function useWallet(options?: UseWalletOptions): UseWalletReturn {
     }
   }, [options?.walletId, state.availableWallets]);
 
-  // Auto-connect: restore the last-used wallet ID from localStorage on mount.
+  // Auto-connect: restore the last-used wallet ID from the storage adapter on mount.
   // Only the wallet type (e.g. "freighter") is stored — never keys or secrets.
   useEffect(() => {
-    if (!options?.autoConnect || state.availableWallets.length === 0 || typeof window === "undefined") return;
-    try {
-      const saved = localStorage.getItem(WALLET_PERSIST_KEY) as WalletId | null;
-      if (saved && state.availableWallets.includes(saved)) {
-        dispatch({ type: "SET_ACTIVE", walletId: saved });
+    if (!options?.autoConnect || state.availableWallets.length === 0) return;
+    const storage = createLocalStorageAdapter();
+    const result = storage.getItem(WALLET_PERSIST_KEY);
+    const resolve = (saved: string | null) => {
+      if (saved && state.availableWallets.includes(saved as WalletId)) {
+        dispatch({ type: "SET_ACTIVE", walletId: saved as WalletId });
       }
-    } catch {
-      // localStorage unavailable (SSR, private browsing) — fail silently
+    };
+    if (result instanceof Promise) {
+      result.then(resolve).catch(() => {});
+    } else {
+      resolve(result);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options?.autoConnect, state.availableWallets]);
 
   // Persist wallet type on connect; clear on disconnect.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      if (state.activeWallet) {
-        localStorage.setItem(WALLET_PERSIST_KEY, state.activeWallet);
-      } else {
-        localStorage.removeItem(WALLET_PERSIST_KEY);
-      }
-    } catch {
-      // ignore
+    const storage = createLocalStorageAdapter();
+    if (state.activeWallet) {
+      storage.setItem(WALLET_PERSIST_KEY, state.activeWallet);
+    } else {
+      storage.removeItem(WALLET_PERSIST_KEY);
     }
   }, [state.activeWallet]);
 
