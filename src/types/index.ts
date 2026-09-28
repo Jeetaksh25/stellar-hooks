@@ -520,8 +520,6 @@ export interface SorobanSimulationEstimate {
 
 export interface UseContractCallReturn<TResult = unknown>
   extends TransactionState<TResult> {
-  /** Instantiated Stellar SDK Contract instance for this contractId, or null if invalid */
-  contract: Contract | null;
   /** Execute a read-only / simulate contract call for a given method */
   read: (
     method: string,

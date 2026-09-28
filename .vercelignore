@@ -1,0 +1,56 @@
+# Exclude development files
+node_modules
+.git
+.gitignore
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Exclude IDE and editor files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Exclude test files
+src/__tests__
+tests
+vitest.config.ts
+vitest.setup.ts
+
+# Exclude documentation (not needed for the app)
+docs
+typedoc.json
+.eslintrc.cjs
+.stylelintrc
+.editorconfig
+.prettierrc
+.prettierignore
+
+# Exclude GitHub workflows
+.github
+
+# Exclude other examples (not needed for try-online)
+examples/soroban-dashboard
+examples/soroban-nft-mint
+examples/multisig-dapp
+examples/minimal-payment
+examples/nextjs-app-router
+examples/nextjs-starter
+
+# Exclude changeset files
+.changeset
+
+# Exclude build artifacts
+dist
+vercel.json
+.size-limit.js
+tsup.config.ts
+
+# Exclude large files
+*.md
+!README.md
+LICENSE
+CONTRIBUTING.md

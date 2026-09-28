@@ -854,6 +854,19 @@ The docs site will be available at `http://localhost:5173` (or the port VitePres
 
 ---
 
+## Preview Deployments
+
+Every pull request gets an automatic Vercel preview deployment of the **try-online** sandbox:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dark-princezz/stellar-hooks)
+
+Reviewers can **click through live examples** without checking out the code locally! Preview URLs follow the pattern:
+```
+https://stellar-hooks-git-<branch-name>.vercel.app
+```
+
+---
+
 ## Release process
 
 This repository uses Changesets for automated changelog generation, version bumps, and npm publishing.

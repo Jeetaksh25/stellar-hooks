@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "💬 Discussions"
-    url: "https://github.com/dark-princezz/stellar-hooks/discussions"
-    about: "Please use Discussions for questions, ideas, and general help."
+  - name: Ask a question
+    url: https://github.com/dark-princezz/stellar-hooks/discussions
+    about: Ask questions and discuss with other community members
