@@ -7,10 +7,14 @@ import {
   normalizeIsConnected,
   normalizeRequestAccess,
 } from "./freighter-normalization";
-import type { WalletAdapter } from "./types";
+import type { WalletAdapter, WalletConnectionState } from "./types";
 import { UserRejectedError, isUserRejectionMessage } from "../utils/errors";
 
 export function createFreighterAdapter(): WalletAdapter {
+  // Track connection state locally so `getState()` never returns an ambiguous
+  // undefined — satisfies the strict-null requirement from issue #832.
+  let _connectedPublicKey: string | null = null;
+
   return {
     id: "freighter",
     name: "Freighter",
@@ -27,15 +31,34 @@ export function createFreighterAdapter(): WalletAdapter {
       return typeof window !== "undefined" && !!(window as unknown as { __FREIGHTER__?: unknown }).__FREIGHTER__;
     },
 
-    async connect(): Promise<string> {
+    /**
+     * Connects to Freighter. Returns the public key on success, or `null` if
+     * the user denies access or no address is returned — callers must handle
+     * the `null` case explicitly (issue #832).
+     */
+    async connect(): Promise<string | null> {
       const { address, error } = await normalizeRequestAccess();
       if (error) throw error;
-      if (!address) throw new Error("No address returned from Freighter");
+      if (!address) return null;
+      _connectedPublicKey = address;
       return address;
     },
 
     disconnect(): void {
       // Freighter does not expose a programmatic disconnect
+      _connectedPublicKey = null;
+    },
+
+    /**
+     * Returns an explicitly-typed discriminated-union state object so callers
+     * can never accidentally access `publicKey` without first checking
+     * `isConnected` (issue #832).
+     */
+    getState(): WalletConnectionState {
+      if (_connectedPublicKey) {
+        return { isConnected: true, publicKey: _connectedPublicKey, networkPassphrase: null };
+      }
+      return { isConnected: false, publicKey: null, networkPassphrase: null };
     },
 
     async signTransaction(xdr: string, opts?: { networkPassphrase?: string }): Promise<string> {

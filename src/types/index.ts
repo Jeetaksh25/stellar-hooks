@@ -3,6 +3,10 @@
  * @description Common type definitions for the stellar-hooks library.
  * @package stellar-hooks
  * @license MIT
+ *
+ * @internal
+ * These types are re-exported from the `stellar-hooks` root. Import from
+ * there, not from this internal path.
  */
 
 import type { Horizon, xdr, Contract } from "@stellar/stellar-sdk";

@@ -32,6 +32,13 @@
         "default": "./dist/index.js"
       }
     },
+    "./package.json": "./package.json",
+    "./internal": {
+      "default": "./dist/internal-blocked.js"
+    },
+    "./internal/*": {
+      "default": "./dist/internal-blocked.js"
+    },
     "./useAccountFlags": {
       "types": "./dist/hooks/useAccountFlags.d.ts",
       "import": {

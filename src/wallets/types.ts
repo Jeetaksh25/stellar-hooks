@@ -2,6 +2,57 @@ export type BuiltinWalletId = "freighter" | "lobstr" | "xbull" | "albedo" | "rab
 
 export type WalletId = BuiltinWalletId | (string & {});
 
+// ─── Disconnected-state discriminant ─────────────────────────────────────────
+
+/**
+ * The wallet is not connected. `publicKey` is `null` and no signing operations
+ * are available. Callers must check `isConnected` before accessing wallet
+ * capabilities to avoid implicit-undefined runtime errors.
+ *
+ * This type is part of the strict-null audit required by issue #832.
+ */
+export interface DisconnectedWalletState {
+  readonly isConnected: false;
+  /** Always `null` when the wallet is not connected. */
+  readonly publicKey: null;
+  /** Always `null` when the wallet is not connected. */
+  readonly networkPassphrase: null;
+}
+
+/**
+ * The wallet is connected. `publicKey` is guaranteed non-null.
+ */
+export interface ConnectedWalletState {
+  readonly isConnected: true;
+  /** The Stellar public key (G…) of the connected account. */
+  readonly publicKey: string;
+  /** The active network passphrase reported by the wallet, or `null` if the
+   *  wallet does not expose it. */
+  readonly networkPassphrase: string | null;
+}
+
+/**
+ * Discriminated union of connected / disconnected wallet state.
+ * Use this type (rather than `{ publicKey?: string | null }`) whenever you
+ * need to express that a wallet may or may not be connected, to force callers
+ * to handle the disconnected branch explicitly.
+ *
+ * @example
+ * ```ts
+ * function handleState(state: WalletConnectionState) {
+ *   if (!state.isConnected) {
+ *     // state.publicKey is null here — TypeScript enforces this
+ *     return;
+ *   }
+ *   // state.publicKey is string here
+ *   console.log(state.publicKey.slice(0, 8));
+ * }
+ * ```
+ */
+export type WalletConnectionState = DisconnectedWalletState | ConnectedWalletState;
+
+// ─── Display metadata ─────────────────────────────────────────────────────────
+
 /**
  * Display metadata for a wallet — used to render wallet-picker UIs without
  * coupling UI code to wallet-specific knowledge.
@@ -33,17 +84,37 @@ export interface WalletMeta {
   supportsSignAuthEntry: boolean;
 }
 
+// ─── Wallet adapter ──────────────────────────────────────────────────────────
+
 export interface WalletAdapter {
   id: WalletId;
   name: string;
   /** Display metadata for wallet-picker UIs. */
   meta: WalletMeta;
   isInstalled(): boolean;
-  connect(): Promise<string>;
+  /**
+   * Connects to the wallet and returns the user's public key.
+   * Resolves to `null` if the user denies access or the wallet returns no
+   * address, instead of throwing — callers **must** handle a `null` return.
+   */
+  connect(): Promise<string | null>;
+  /**
+   * Disconnects from the wallet. After this call the adapter's `getState()`
+   * (if implemented) must return a `DisconnectedWalletState`.
+   */
   disconnect(): void;
   signTransaction(xdr: string, opts?: { networkPassphrase?: string }): Promise<string>;
   signMessage?(message: string, opts?: { accountToSign?: string }): Promise<string>;
   signAuthEntry?(entryPreimageXdr: string): Promise<string>;
+  /**
+   * Returns the current connection state as an explicit discriminated union.
+   * Prefer this over storing `publicKey | null` in component state to avoid
+   * the implicit-undefined bugs addressed by issue #832.
+   *
+   * If the adapter does not implement `getState()`, callers should fall back to
+   * the `DisconnectedWalletState` sentinel.
+   */
+  getState?(): WalletConnectionState;
 }
 
 /**
