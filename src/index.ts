@@ -220,6 +220,12 @@ export type {
   UseTrustlineOptions,
   UseTrustlineReturn,
 } from "./hooks/useTrustline";
+export { useBatchTrustline } from "./hooks/useBatchTrustline";
+export type {
+  BatchTrustlineAsset,
+  UseBatchTrustlineOptions,
+  UseBatchTrustlineReturn,
+} from "./hooks/useBatchTrustline";
 export { useCreateAccount } from "./hooks/useCreateAccount";
 export type {
   UseCreateAccountOptions,
@@ -256,6 +262,12 @@ export type {
   // Transactions
   TransactionStatus,
   TransactionState,
+  // Lifecycle Callbacks
+  BeforeSubmitContext,
+  AfterSubmitContext,
+  OnBeforeSubmitCallback,
+  OnAfterSubmitCallback,
+  WriteHookLifecycleOptions,
   // Contract
   ContractCallOptions,
   SorobanSimulationEstimate,
@@ -303,9 +315,24 @@ export type {
 // Network presets (useful for custom configs)
 export { NETWORK_CONFIGS } from "./types";
 
-// Wallet adapters
-export type { WalletId, WalletAdapter, WalletMeta, WalletInfo } from "./wallets";
+// Wallet adapters & plugins
+export type {
+  BuiltinWalletId,
+  WalletId,
+  WalletAdapter,
+  WalletMeta,
+  WalletInfo,
+  WalletAdapterPlugin,
+  CustomWalletAdapterInput,
+} from "./wallets";
 export {
+  defineWalletAdapter,
+  defineWalletPlugin,
+  registerWalletAdapter,
+  unregisterWalletAdapter,
+  getRegisteredWalletAdapters,
+  clearWalletAdapterRegistry,
+  resolveWalletAdapter,
   createFreighterAdapter,
   createLobstrAdapter,
   createXBullAdapter,
@@ -320,6 +347,23 @@ export {
   supportsAuthEntrySigning,
   getWalletsWithCapability,
 } from "./wallets";
+
+// Outgoing transaction middleware pipeline
+export {
+  TransactionPipeline,
+  registerTransactionMiddleware,
+  unregisterTransactionMiddleware,
+  getRegisteredTransactionMiddleware,
+  clearTransactionMiddlewareRegistry,
+  createLoggingMiddleware,
+  createValidationMiddleware,
+} from "./middleware";
+export type {
+  TransactionMiddleware,
+  TransactionMiddlewareContext,
+  TransactionMiddlewareNext,
+  LoggingMiddlewareOptions,
+} from "./middleware";
 
 // Utilities
 export {

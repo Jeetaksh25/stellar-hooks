@@ -10,6 +10,19 @@ Click the button below to open this sandbox in your browser:
 
 [![Open in CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/dark-princezz/stellar-hooks/tree/main/examples/try-online)
 
+## PR Preview Deployments
+
+When you open a pull request, Vercel automatically deploys a preview of the try-online sandbox:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dark-princezz/stellar-hooks)
+
+Preview URLs follow the pattern:
+```
+https://stellar-hooks-git-<branch-name>.vercel.app
+```
+
+Reviewers can click through the live demo without checking out the code locally!
+
 ## Features
 
 This sandbox includes working examples of:

@@ -85,3 +85,5 @@ Items undergoing exploratory design and research:
 2. **Comment on the Issue:** Leave a comment expressing your interest so maintainers can assign it to you and update the board status to `In Progress`.
 3. **Follow the Contributing Guide:** Review [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, testing, and conventional commit rules.
 4. **Propose New Roadmap Items:** Have an idea? Submit a [Feature Request](https://github.com/dark-princezz/stellar-hooks/issues/new?template=feature_request.md). Accepted proposals are assigned to the appropriate milestone board.
+5. **Earn a Bounty:** Some `good first issue` items carry a small bounty — see [BOUNTIES.md](BOUNTIES.md).
+6. **Stay Updated:** Monthly roadmap updates are posted in GitHub Discussions and cross-posted to the Stellar Developer Discord — see [COMMUNITY.md](COMMUNITY.md).

@@ -28,7 +28,7 @@ import type {
   StellarTransactionError,
 } from "../types";
 import { unsafeAsXdrString, asTxHash, unsafeAsTxHash } from "../types";
-import { sleep, backoff, validateContractId } from "../utils";
+import { sleep, backoff, validateContractId, warnDeprecated } from "../utils";
 
 // ─── State ─────────────────────────────────────────────────────────────────────
 
@@ -210,6 +210,14 @@ export function useSorobanContract<TResult = unknown>(
     parseResult: baseParse,
     optimisticResult: baseOptimisticResult,
   } = options;
+
+  if (sorobanRpcServer) {
+    warnDeprecated(
+      "useSorobanContract({ sorobanRpcServer })",
+      "Passing 'sorobanRpcServer' directly is deprecated and will be removed in v1.0.0. Configure the RPC URL via StellarProvider or pass customNetworkConfig instead.",
+      { version: "1.0.0" }
+    );
+  }
 
   const reducer = createReducer<TResult>();
   const [state, dispatch] = useReducer(reducer, {
@@ -595,15 +603,6 @@ export function useSorobanContract<TResult = unknown>(
     [baseParse, simulate]
   );
 
-    const contract = useMemo(() => {
-    if (!contractId) return null;
-    try {
-      return new Contract(contractId);
-    } catch {
-      return null;
-    }
-  }, [contractId]);
-
   const read = useCallback(
     async (
       method: string,
@@ -634,7 +633,6 @@ export function useSorobanContract<TResult = unknown>(
 
   return {
     ...state,
-    contract,
     read,
     write,
     invoke,

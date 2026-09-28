@@ -154,3 +154,4 @@ export * from './logger';
 export * from './cacheAdapter';
 export * from './formatAmount';
 export * from './errorStrings';
+export * from './deprecation';

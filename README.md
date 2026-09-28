@@ -22,7 +22,7 @@ Install the library via your preferred package manager:
 ```bash
 npm install stellar-hooks
 ```
-*(Note: `@stellar/stellar-sdk` and `@stellar/freighter-api` are bundled as direct dependencies, so you don't need to install them separately).*
+*(Note: `@stellar/stellar-sdk` and `@stellar/freighter-api` are bundled as direct dependencies, so you don't need to install them separately. See [`COMPATIBILITY.md`](COMPATIBILITY.md) for supported SDK versions and compatibility matrix).*
 
 ### 2. Wrap Your App in `<StellarProvider>`
 
@@ -837,6 +837,8 @@ See [docs/guides/migration-guide.md](docs/guides/migration-guide.md) for a compr
 
 Please review our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) for more details before opening a pull request.
 
+See also: [Contributors](CONTRIBUTORS.md) · [Bounty Program](BOUNTIES.md) · [Community Updates](COMMUNITY.md)
+
 ## Documentation
 
 Full documentation with live examples is available at **[https://spiffamani.github.io/stellar-hooks/](https://spiffamani.github.io/stellar-hooks/)**
@@ -849,6 +851,19 @@ npm run docs:dev
 ```
 
 The docs site will be available at `http://localhost:5173` (or the port VitePress assigns).
+
+---
+
+## Preview Deployments
+
+Every pull request gets an automatic Vercel preview deployment of the **try-online** sandbox:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dark-princezz/stellar-hooks)
+
+Reviewers can **click through live examples** without checking out the code locally! Preview URLs follow the pattern:
+```
+https://stellar-hooks-git-<branch-name>.vercel.app
+```
 
 ---
 

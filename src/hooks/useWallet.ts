@@ -45,14 +45,14 @@
  */
 
 import { useCallback, useEffect, useMemo, useReducer } from "react";
-import type { WalletId, WalletAdapter, WalletInfo } from "../wallets/types";
+import type { WalletId, WalletAdapter, WalletInfo, CustomWalletAdapterInput } from "../wallets/types";
 import { createAllAdapters } from "../wallets";
 import { asPublicKey, type StellarPublicKey } from "../types";
 import { useOptionalStellarContext } from "../context";
 
 // ─── Public API types ──────────────────────────────────────────────────────────
 
-export type { WalletInfo };
+export type { WalletInfo, CustomWalletAdapterInput };
 
 /**
  * Configuration options for the useWallet hook.
@@ -63,6 +63,10 @@ export interface UseWalletOptions {
    * and use the last-connected wallet from localStorage.
    */
   walletId?: WalletId;
+  /**
+   * Optional custom wallet adapters or plugins to register for this hook instance.
+   */
+  adapters?: CustomWalletAdapterInput[];
   /**
    * If true, automatically reconnects users who previously granted access (default: false).
    * Only works if the wallet was previously connected and permission was granted.
@@ -270,8 +274,14 @@ const WALLET_PERSIST_KEY = "stellar-hooks:last-wallet";
  */
 export function useWallet(options?: UseWalletOptions): UseWalletReturn {
   const [state, dispatch] = useReducer(reducer, initial);
-  const adapters = useMemo<WalletAdapter[]>(() => createAllAdapters(), []);
   const stellarContext = useOptionalStellarContext();
+  const optionAdapters = options?.adapters;
+  const contextAdapters = stellarContext?.walletAdapters;
+
+  const adapters = useMemo<WalletAdapter[]>(
+    () => createAllAdapters([...(contextAdapters ?? []), ...(optionAdapters ?? [])]),
+    [contextAdapters, optionAdapters]
+  );
 
   // Resolve network passphrase: explicit option > provider config > undefined
   const resolvedNetworkPassphrase = useMemo(

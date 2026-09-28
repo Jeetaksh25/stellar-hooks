@@ -1,6 +1,6 @@
 # CHANGELOG Entry Format Guide
 
-This document defines the expected format for CHANGELOG entries in `stellar-hooks`. All updates to [`CHANGELOG.md`](CHANGELOG.md) must follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standards and adhere to [Semantic Versioning](https://semver.org/).
+This document defines the expected format for CHANGELOG entries in `stellar-hooks`. All updates to [`CHANGELOG.md`](CHANGELOG.md) must follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standards and adhere to [Semantic Versioning](https://semver.org/) as documented in [`SEMVER.md`](SEMVER.md).
 
 For full documentation and online preview, see [`docs/guides/changelog-format-guide.md`](docs/guides/changelog-format-guide.md).
 

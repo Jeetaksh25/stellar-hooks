@@ -39,6 +39,12 @@ export interface UseTrustlineOptions {
   fee?: number;
   /** Polling timeout in seconds. Default: 60 */
   timeoutSeconds?: number;
+  /** Additional transaction middleware to execute for this hook instance */
+  middleware?: import("../middleware").TransactionMiddleware[];
+  /** Callback fired before transaction submission. Return false to abort submission. */
+  onBeforeSubmit?: import("../types").OnBeforeSubmitCallback;
+  /** Callback fired after transaction submission finishes or fails. */
+  onAfterSubmit?: import("../types").OnAfterSubmitCallback;
   /** Callback fired when the transaction is successfully confirmed. */
   onSuccess?: (hash: string) => void;
   /** Callback fired when the transaction fails or an error occurs. */
@@ -146,7 +152,6 @@ export interface UseTrustlineReturn {
  * await changeTrust({ limit: "0" });
  * ```
  */
- */
 export function useTrustline(options: UseTrustlineOptions = {}): UseTrustlineReturn {
   const {
     publicKey: optionPublicKey,
@@ -156,6 +161,9 @@ export function useTrustline(options: UseTrustlineOptions = {}): UseTrustlineRet
     limit,
     fee = 100,
     timeoutSeconds = 60,
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     onSuccess,
     onError,
   } = options;
@@ -168,6 +176,9 @@ export function useTrustline(options: UseTrustlineOptions = {}): UseTrustlineRet
     mode: "classic",
     timeoutSeconds,
     debugLabel: "useTrustline",
+    middleware,
+    onBeforeSubmit,
+    onAfterSubmit,
     ...(onSuccess && { onSuccess }),
     ...(onError && { onError }),
   });

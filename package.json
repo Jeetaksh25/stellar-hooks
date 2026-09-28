@@ -791,6 +791,17 @@
         "default": "./dist/hooks/useTrustline.js"
       }
     },
+    "./useBatchTrustline": {
+      "types": "./dist/hooks/useBatchTrustline.d.ts",
+      "import": {
+        "types": "./dist/hooks/useBatchTrustline.d.mts",
+        "default": "./dist/hooks/useBatchTrustline.mjs"
+      },
+      "require": {
+        "types": "./dist/hooks/useBatchTrustline.d.ts",
+        "default": "./dist/hooks/useBatchTrustline.js"
+      }
+    },
     "./useTrustlines": {
       "types": "./dist/hooks/useTrustlines.d.ts",
       "import": {
@@ -940,6 +951,7 @@
     "@types/node": "^25.9.1",
     "@types/react": "^18.3.0",
     "@types/react-test-renderer": "^18.3.0",
+    "@types/jscodeshift": "^0.11.11",
     "@typescript-eslint/eslint-plugin": "^8.62.1",
     "@typescript-eslint/parser": "^8.62.1",
     "@walletconnect/sign-client": "2.23.10",
@@ -947,6 +959,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "husky": "^9.1.7",
+    "jscodeshift": "^17.3.0",
     "jsdom": "^29.1.1",
     "lint-staged": "^15.5.0",
     "msw": "^2.15.0",
