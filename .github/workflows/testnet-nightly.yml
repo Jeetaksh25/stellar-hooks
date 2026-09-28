@@ -1,0 +1,53 @@
+name: Testnet nightly integration
+
+# Nightly workflow to run integration tests against public testnet
+# to catch upstream Horizon/RPC breaking changes early.
+on:
+  schedule:
+    - cron: "0 2 * * *"  # Run at 2:00 AM UTC daily
+  workflow_dispatch:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  testnet:
+    name: Testnet live integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-20-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-20-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Testnet integration tests
+        run: npm run test:testnet
+        env:
+          # Use the default testnet configuration
+          TESTNET_PUBLIC_KEY: ${{ secrets.TESTNET_PUBLIC_KEY }}
+
+      - name: Notify on failure
+        if: ${{ failure() }}
+        run: |
+          echo "Testnet integration tests failed on $(date)"
+          # Add notification logic here (e.g., Slack, Discord, GitHub issue)
+          # Example for GitHub issue:
+          # gh issue create --title "Testnet Integration Failed: $(date)" --body "See [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" --label "bug"

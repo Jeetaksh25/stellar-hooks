@@ -15,7 +15,7 @@
     "docs:clean": "rm -rf docs/api",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "codemod:v0.2.0": "npx jscodeshift -t codemods/v0.2.0/use-account-merge.js --extensions=ts,tsx,js,jsx --parser=tsx"
+    "test:testnet": "vitest run tests/integration/testnet"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
