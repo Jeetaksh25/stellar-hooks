@@ -499,7 +499,12 @@ export function useTransactionLifecycle<TResult = unknown>(
         let error: StellarTransactionError;
         const message = err instanceof Error ? err.message : String(err);
 
-        if (
+        if (/429|rate.?limit|too many requests/i.test(message)) {
+          error = {
+            type: "network",
+            message: `Rate limit exceeded (HTTP 429): ${message}`,
+          };
+        } else if (
           message.includes("NetworkError") ||
           message.includes("ECONNREFUSED") ||
           message.includes("ENOTFOUND") ||

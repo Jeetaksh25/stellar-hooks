@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { RateLimitedError } from "../utils/errors";
 
 export interface StellarAssetRating {
   age: number;
@@ -125,9 +126,14 @@ export function useAssetSearch(
           });
 
           if (!response.ok) {
-            // Handle rate limiting (429) with a specific error message
+            // Handle rate limiting (429) with a typed RateLimitedError
             if (response.status === 429) {
-              throw new Error("Rate limited by StellarExpert API. Please try again later.");
+              const retryAfterHeader = response.headers.get("retry-after");
+              const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+              throw new RateLimitedError("Rate limited by StellarExpert API. Please try again later.", {
+                retryAfter: !isNaN(retryAfter ?? NaN) ? retryAfter : undefined,
+                endpoint: STELLAR_EXPERT_API_URL,
+              });
             }
             throw new Error(`StellarExpert API returned ${response.status}: ${response.statusText}`);
           }
