@@ -27,6 +27,7 @@ export interface ErrorStrings {
   feeTooLow: string;
 
   // Network / RPC errors
+  rateLimited: string;
   networkError: string;
   rpcError: string;
   accountNotFound: string;
@@ -71,7 +72,8 @@ export const DEFAULT_ERROR_STRINGS: Readonly<ErrorStrings> = Object.freeze({
   feeTooLow: "Transaction fee is too low.",
 
   // Network / RPC errors
-  networkError: "A network error occurred while communicating with the Stellar network.",
+  rateLimited: "Rate limit exceeded (HTTP 429). The Stellar endpoint is temporarily unavailable. Please retry after the indicated delay.",
+  networkError: "A network error occurred while communicating with the Stellar network.",,
   rpcError: "An RPC error occurred while querying the network.",
   accountNotFound: "Account was not found on the Stellar network.",
   contractNotFound: "Soroban contract was not found.",
@@ -110,6 +112,7 @@ const ERROR_CODE_TO_STRING_KEY: Record<string, ErrorStringKey> = {
   INSUFFICIENT_BALANCE: "insufficientBalance",
   FEE_TOO_LOW: "feeTooLow",
 
+  RATE_LIMITED: "rateLimited",
   NETWORK_ERROR: "networkError",
   RPC_ERROR: "rpcError",
   ACCOUNT_NOT_FOUND: "accountNotFound",

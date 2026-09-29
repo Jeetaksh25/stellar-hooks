@@ -30,6 +30,7 @@ export enum ErrorCode {
   FEE_TOO_LOW = "FEE_TOO_LOW",
 
   // Network / RPC errors
+  RATE_LIMITED = "RATE_LIMITED",
   NETWORK_ERROR = "NETWORK_ERROR",
   RPC_ERROR = "RPC_ERROR",
   ACCOUNT_NOT_FOUND = "ACCOUNT_NOT_FOUND",
@@ -113,6 +114,8 @@ export class StellarHookError extends Error {
         code = ErrorCode.TRANSACTION_TIMEOUT;
       } else if (/simulation|simulate/i.test(message)) {
         code = ErrorCode.SIMULATION_ERROR;
+      } else if (/429|rate.?limit|too many requests/i.test(message)) {
+        code = ErrorCode.RATE_LIMITED;
       } else if (/network|fetch|ECONNREFUSED|NetworkError/i.test(message)) {
         code = ErrorCode.NETWORK_ERROR;
       } else if (/valid.*stellar|invalid.*public key|invalid.*contract/i.test(message)) {
@@ -127,6 +130,39 @@ export class StellarHookError extends Error {
       cause: err,
     };
     if (additionalContext !== undefined) opts.context = additionalContext;
+
+    // Return a typed RateLimitedError when the error is a 429
+    if (code === ErrorCode.RATE_LIMITED) {
+      let retryAfter: number | undefined;
+      let endpoint: string | undefined;
+      if (err instanceof Error) {
+        // Check for retryAfter property on the original error (some SDKs expose it)
+        if ("retryAfter" in err && typeof (err as { retryAfter?: unknown }).retryAfter === "number") {
+          retryAfter = (err as { retryAfter: number }).retryAfter;
+        }
+        // Check for Retry-After header in response property
+        if ("response" in err) {
+          const resp = (err as { response?: { headers?: Record<string, string> | Headers; url?: string } }).response;
+          if (resp?.headers) {
+            const headers = resp.headers;
+            const retryAfterHeader = headers instanceof Headers
+              ? headers.get("retry-after")
+              : (headers as Record<string, string>)["retry-after"] ?? (headers as Record<string, string>)["Retry-After"];
+            if (retryAfterHeader) {
+              const parsed = parseInt(retryAfterHeader, 10);
+              if (!isNaN(parsed)) retryAfter = parsed;
+            }
+          }
+          if (resp?.url) endpoint = resp.url;
+        }
+        // Check for status property
+        if ("status" in err && (err as { status?: unknown }).status === 429) {
+          // Already confirmed 429
+        }
+      }
+      return new RateLimitedError(message, { retryAfter, endpoint, cause: err, context: additionalContext });
+    }
+
     return new StellarHookError(message, opts);
   }
 }
@@ -343,6 +379,54 @@ export class NetworkError extends StellarHookError {
     this.name = "NetworkError";
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, NetworkError);
+    }
+  }
+}
+
+// ─── RateLimitedError ─────────────────────────────────────────────────────────
+
+/**
+ * Thrown when a Horizon or Soroban RPC endpoint returns an HTTP 429 (Too Many
+ * Requests) rate-limit response.
+ *
+ * Extends {@link StellarHookError} with a fixed `code` of `ErrorCode.RATE_LIMITED`
+ * and exposes the server's `Retry-After` hint (in seconds) so consumers can
+ * schedule an intelligent retry rather than guessing.
+ *
+ * @example
+ * ```ts
+ * try {
+ *   const { account } = useStellarAccount(publicKey);
+ * } catch (err) {
+ *   if (err instanceof RateLimitedError) {
+ *     console.warn(`Rate limited. Retry after ${err.retryAfter ?? "unknown"}s`);
+ *     setTimeout(refetch, (err.retryAfter ?? 5) * 1000);
+ *     return;
+ *   }
+ *   throw err;
+ * }
+ * ```
+ */
+export class RateLimitedError extends StellarHookError {
+  /** The `Retry-After` header value in seconds, if the server provided one. */
+  public readonly retryAfter: number | undefined;
+  /** The Horizon or Soroban RPC URL that returned the 429. */
+  public readonly endpoint: string | undefined;
+
+  constructor(
+    message = "Rate limit exceeded (HTTP 429). Please retry after the indicated delay.",
+    options?: { retryAfter?: number; endpoint?: string; cause?: unknown; context?: Record<string, unknown> }
+  ) {
+    super(message, {
+      code: ErrorCode.RATE_LIMITED,
+      cause: options?.cause,
+      context: { ...options?.context, retryAfter: options?.retryAfter, endpoint: options?.endpoint },
+    });
+    this.name = "RateLimitedError";
+    this.retryAfter = options?.retryAfter;
+    this.endpoint = options?.endpoint;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, RateLimitedError);
     }
   }
 }
