@@ -921,6 +921,47 @@ Track active development and upcoming features on our public **[GitHub Projects 
 - [ ] 100% test coverage across critical transaction flows
 - [ ] Strict TypeScript typing and declaration maps verification
 
+## Privacy & Network Data
+
+### What data does the library send over the network?
+
+**None beyond the Horizon and Soroban RPC endpoints you configure.**
+
+`stellar-hooks` does **not** include any telemetry, analytics, error reporting, or third-party tracking. The library makes network requests **only** to the endpoints you specify via `<StellarProvider network="…">` or a custom configuration:
+
+| Endpoint type | Configured via | Used by |
+|---|---|---|
+| **Horizon REST API** | `horizonUrl` in `<StellarProvider>` or network preset | Account, balance, effects, operations, trades, order book, payments, paths, liquidity pools, streaming |
+| **Soroban RPC** | `sorobanRpcUrl` in `<StellarProvider>` or network preset | Contract simulation, invocation, events, ledger entry reads |
+
+No other outbound calls are made. Specifically:
+
+- ❌ No analytics or telemetry SDKs (no Sentry, PostHog, Amplitude, Mixpanel, etc.)
+- ❌ No error-reporting phone-home calls
+- ❌ No `navigator.sendBeacon()` or background ping endpoints
+- ❌ No downloads of remote configuration or feature flags
+- ❌ No wallet telemetry — wallet interactions go directly through the wallet provider's own API (e.g. Freighter's `window.freighter`)
+
+All network traffic originates from [`@stellar/stellar-sdk`](https://github.com/stellar/js-stellar-sdk) `Horizon.Server` and `rpc.Server` instances, which are constructed solely from the URLs you provide. Server instances are memoized per URL (see `src/utils/memoizedServers.ts`) and never hardcoded to any third-party host.
+
+### Network presets
+
+The built-in presets resolve to the official public Stellar infrastructure:
+
+| Network | Horizon URL | Soroban RPC URL |
+|---|---|---|
+| `testnet` | `https://horizon-testnet.stellar.org` | `https://soroban-testnet.stellar.org` |
+| `mainnet` | `https://horizon.stellar.org` | `https://mainnet.sorobanrpc.com` |
+| `futurenet` | `https://horizon-futurenet.stellar.org` | `https://rpc-futurenet.stellar.org` |
+
+You can override any of these with a custom configuration at any time.
+
+### Verifying for yourself
+
+To audit outbound requests in your app, use your browser's DevTools **Network** tab or wrap `globalThis.fetch` in a test environment. You should only see requests to the Horizon and Soroban RPC URLs you configured.
+
+---
+
 ## FAQ
 
 ### Which Stellar networks are supported?
