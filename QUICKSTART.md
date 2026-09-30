@@ -18,25 +18,7 @@ yarn add stellar-hooks
 pnpm add stellar-hooks
 ```
 
-## Step 2: Wrap Your App in the Provider
 
-The `StellarProvider` component makes the Stellar network configuration available to all hooks in your app.
-
-```tsx
-// src/main.tsx or src/App.tsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { StellarProvider } from 'stellar-hooks';
-import App from './App';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <StellarProvider network="testnet">
-      <App />
-    </StellarProvider>
-  </React.StrictMode>
-);
-```
 
 **Provider Options:**
 
