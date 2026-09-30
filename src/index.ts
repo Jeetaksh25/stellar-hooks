@@ -528,6 +528,13 @@ export type {
   UseSorobanEventsReturn,
 } from "./hooks/useSorobanEvents";
 
+export { useSorobanEventFilter } from "./hooks/useSorobanEventFilter";
+export type {
+  SorobanEventFilterPreset,
+  UseSorobanEventFilterOptions,
+  UseSorobanEventFilterReturn,
+} from "./hooks/useSorobanEventFilter";
+
 export { useWasmUpload } from "./hooks/useWasmUpload";
 export type {
   UseWasmUploadOptions,
