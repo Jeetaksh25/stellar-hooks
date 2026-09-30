@@ -26,18 +26,3 @@ For full documentation and online preview, see [`docs/guides/changelog-format-gu
 
 ---
 
-## PR Entry Template
-
-When contributing a PR with user-facing modifications, add your entry under `## [Unreleased]` at the top of [`CHANGELOG.md`](CHANGELOG.md):
-
-```markdown
-### <Category>
-- `<hookOrModule>` — <concise description of what changed> ([#<PR_ID>](https://github.com/dark-princezz/stellar-hooks/pull/<PR_ID>))
-```
-
-### Breaking Change Example
-
-```markdown
-### Changed
-- **Breaking:** `useAccountMerge` now returns `{ submit, status, ... }` action API instead of executing on mount. See [MIGRATION.md](MIGRATION.md). ([#78](https://github.com/dark-princezz/stellar-hooks/pull/78))
-```
