@@ -575,6 +575,12 @@ export type {
   UseAssetSearchReturn,
 } from "./hooks/useAssetSearch";
 
+export { useCurrencyDisplay } from "./hooks/useCurrencyDisplay";
+export type {
+  UseCurrencyDisplayOptions,
+  UseCurrencyDisplayReturn,
+} from "./hooks/useCurrencyDisplay";
+
 export { useXdrDecoder } from "./hooks/useXdrDecoder";
 export type {
   UseXdrDecoderOptions,
