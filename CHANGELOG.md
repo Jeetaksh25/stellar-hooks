@@ -91,3 +91,9 @@ For breaking changes and migration steps, see [MIGRATION.md](MIGRATION.md).
 - `useLedgerEntry()` — read a raw Soroban ledger entry by `xdr.LedgerKey`
 - Full TypeScript types and JSDoc on every public symbol
 - Network presets exported as `NETWORK_CONFIGS`
+
+### 4. Permanent Ban
+
+**Community Impact**: Demonstrating a pattern of violation of community
+standards, including sustained inappropriate behavior, harassment of an
+individual, or aggression toward or disparagement of classes of individuals.
