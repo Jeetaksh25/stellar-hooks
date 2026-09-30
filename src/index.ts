@@ -582,6 +582,13 @@ export type {
   UseAssetSearchReturn,
 } from "./hooks/useAssetSearch";
 
+export { useNotificationPermission } from "./hooks/useNotificationPermission";
+export type {
+  NotificationPermissionState,
+  UseNotificationPermissionOptions,
+  UseNotificationPermissionReturn,
+} from "./hooks/useNotificationPermission";
+
 export { useXdrDecoder } from "./hooks/useXdrDecoder";
 export type {
   UseXdrDecoderOptions,
