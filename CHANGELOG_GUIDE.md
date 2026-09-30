@@ -26,9 +26,7 @@ For full documentation and online preview, see [`docs/guides/changelog-format-gu
 
 ---
 
-## PR Entry Template
 
-When contributing a PR with user-facing modifications, add your entry under `## [Unreleased]` at the top of [`CHANGELOG.md`](CHANGELOG.md):
 
 ```markdown
 ### <Category>
